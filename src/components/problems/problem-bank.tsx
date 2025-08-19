@@ -1,348 +1,407 @@
-"use client"
+"use client";
 
-import React, { useState, useMemo } from 'react'
-import { Search, Filter, ChevronDown, Trophy, Clock, CheckCircle2 } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState, useEffect, useMemo } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Search, Filter, Code, CheckCircle, XCircle, Clock, Play, History, Tag, Users } from "lucide-react";
 
 interface Problem {
-  id: string
-  title: string
-  difficulty: 'Easy' | 'Medium' | 'Hard'
-  topics: string[]
-  acceptanceRate: number
-  isCompleted: boolean
-  recentlyAdded: boolean
+  id: string;
+  title: string;
+  description: string;
+  difficulty: "easy" | "medium" | "hard";
+  category: string;
+  tags: string[];
+  testCases: {
+    input: string;
+    expectedOutput: string;
+  }[];
+  solutionTemplate?: string;
+  examples: {
+    input: string;
+    output: string;
+    explanation: string;
+  }[];
+  constraints: string[];
 }
 
-const mockProblems: Problem[] = [
-  {
-    id: '1',
-    title: 'Two Sum',
-    difficulty: 'Easy',
-    topics: ['Arrays', 'Hash Table'],
-    acceptanceRate: 92.5,
-    isCompleted: true,
-    recentlyAdded: false
-  },
-  {
-    id: '2',
-    title: 'Binary Tree Inorder Traversal',
-    difficulty: 'Medium',
-    topics: ['Trees', 'Recursion', 'Stack'],
-    acceptanceRate: 87.3,
-    isCompleted: false,
-    recentlyAdded: true
-  },
-  {
-    id: '3',
-    title: 'Maximum Depth of Binary Tree',
-    difficulty: 'Easy',
-    topics: ['Trees', 'Recursion', 'DFS'],
-    acceptanceRate: 94.1,
-    isCompleted: true,
-    recentlyAdded: false
-  },
-  {
-    id: '4',
-    title: 'Graph Valid Tree',
-    difficulty: 'Hard',
-    topics: ['Graphs', 'Union Find', 'DFS'],
-    acceptanceRate: 45.2,
-    isCompleted: false,
-    recentlyAdded: false
-  },
-  {
-    id: '5',
-    title: 'Longest Substring Without Repeating Characters',
-    difficulty: 'Medium',
-    topics: ['Strings', 'Sliding Window', 'Hash Table'],
-    acceptanceRate: 76.8,
-    isCompleted: false,
-    recentlyAdded: true
-  },
-  {
-    id: '6',
-    title: 'Merge Two Sorted Lists',
-    difficulty: 'Easy',
-    topics: ['Linked List', 'Recursion'],
-    acceptanceRate: 89.7,
-    isCompleted: true,
-    recentlyAdded: false
-  },
-  {
-    id: '7',
-    title: 'Course Schedule',
-    difficulty: 'Medium',
-    topics: ['Graphs', 'Topological Sort', 'DFS'],
-    acceptanceRate: 62.4,
-    isCompleted: false,
-    recentlyAdded: false
-  },
-  {
-    id: '8',
-    title: 'Trapping Rain Water',
-    difficulty: 'Hard',
-    topics: ['Arrays', 'Two Pointers', 'Dynamic Programming'],
-    acceptanceRate: 38.9,
-    isCompleted: false,
-    recentlyAdded: true
-  }
-]
-
-const allTopics = ['Arrays', 'Strings', 'Trees', 'Graphs', 'Hash Table', 'Linked List', 'Recursion', 'Dynamic Programming', 'Two Pointers', 'Sliding Window', 'Stack', 'DFS', 'Union Find', 'Topological Sort']
-
-const difficultyColors = {
-  Easy: 'bg-[#10b981] text-white',
-  Medium: 'bg-[#f59e0b] text-white',
-  Hard: 'bg-[#ef4444] text-white'
+interface UserSubmission {
+  id: string;
+  problemId: string;
+  code: string;
+  language: string;
+  status: "accepted" | "wrong-answer" | "time-limit-exceeded" | "runtime-error" | "pending";
+  submittedAt: string;
+  runtime?: number;
+  memory?: number;
 }
 
-export default function ProblemBank() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all')
-  const [selectedTopics, setSelectedTopics] = useState<string[]>([])
-  const [completionFilter, setCompletionFilter] = useState<string>('all')
-  const [sortBy, setSortBy] = useState<string>('title')
+interface ProblemStatus {
+  problemId: string;
+  status: "solved" | "attempted" | "unsolved";
+  submissions: UserSubmission[];
+}
 
-  const filteredAndSortedProblems = useMemo(() => {
-    let filtered = mockProblems.filter(problem => {
-      const matchesSearch = problem.title.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesDifficulty = selectedDifficulty === 'all' || problem.difficulty === selectedDifficulty
-      const matchesTopics = selectedTopics.length === 0 || selectedTopics.some(topic => problem.topics.includes(topic))
-      const matchesCompletion = completionFilter === 'all' || 
-        (completionFilter === 'completed' && problem.isCompleted) ||
-        (completionFilter === 'unsolved' && !problem.isCompleted)
-      
-      return matchesSearch && matchesDifficulty && matchesTopics && matchesCompletion
-    })
+const difficultyConfig = {
+  easy: { color: "bg-green-100 text-green-800 border-green-200", label: "Easy" },
+  medium: { color: "bg-yellow-100 text-yellow-800 border-yellow-200", label: "Medium" },
+  hard: { color: "bg-red-100 text-red-800 border-red-200", label: "Hard" }
+};
 
-    return filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'difficulty':
-          const difficultyOrder = { 'Easy': 0, 'Medium': 1, 'Hard': 2 }
-          return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty]
-        case 'acceptance':
-          return b.acceptanceRate - a.acceptanceRate
-        case 'recent':
-          return Number(b.recentlyAdded) - Number(a.recentlyAdded)
-        default:
-          return a.title.localeCompare(b.title)
+const statusConfig = {
+  accepted: { icon: CheckCircle, color: "text-green-600", label: "Accepted" },
+  "wrong-answer": { icon: XCircle, color: "text-red-600", label: "Wrong Answer" },
+  "time-limit-exceeded": { icon: Clock, color: "text-yellow-600", label: "Time Limit" },
+  "runtime-error": { icon: XCircle, color: "text-orange-600", label: "Runtime Error" },
+  pending: { icon: Clock, color: "text-blue-600", label: "Pending" }
+};
+
+export const ProblemBank = () => {
+  const [problems, setProblems] = useState<Problem[]>([]);
+  const [userSubmissions, setUserSubmissions] = useState<UserSubmission[]>([]);
+  const [problemStatuses, setProblemStatuses] = useState<Map<string, ProblemStatus>>(new Map());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Filters and search
+  const [searchTerm, setSearchTerm] = useState("");
+  const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  
+  // Selected problem and submission
+  const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
+  const [userCode, setUserCode] = useState("");
+  const [submissionStatus, setSubmissionStatus] = useState<"idle" | "submitting" | "submitted">("idle");
+  const [activeTab, setActiveTab] = useState("description");
+
+  // Fetch data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [problemsRes, submissionsRes] = await Promise.all([
+          fetch("/api/problems"),
+          fetch("/api/user-submissions")
+        ]);
+
+        if (!problemsRes.ok || !submissionsRes.ok) {
+          throw new Error("Failed to fetch data");
+        }
+
+        const problemsData = await problemsRes.json();
+        const submissionsData = await submissionsRes.json();
+
+        setProblems(problemsData);
+        setUserSubmissions(submissionsData);
+
+        // Calculate problem statuses
+        const statusMap = new Map<string, ProblemStatus>();
+        problemsData.forEach((problem: Problem) => {
+          const problemSubmissions = submissionsData.filter(
+            (sub: UserSubmission) => sub.problemId === problem.id
+          );
+          
+          let status: "solved" | "attempted" | "unsolved" = "unsolved";
+          if (problemSubmissions.some((sub: UserSubmission) => sub.status === "accepted")) {
+            status = "solved";
+          } else if (problemSubmissions.length > 0) {
+            status = "attempted";
+          }
+
+          statusMap.set(problem.id, {
+            problemId: problem.id,
+            status,
+            submissions: problemSubmissions
+          });
+        });
+
+        setProblemStatuses(statusMap);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setLoading(false);
       }
-    })
-  }, [searchQuery, selectedDifficulty, selectedTopics, completionFilter, sortBy])
+    };
 
-  const totalProblems = mockProblems.length
-  const solvedProblems = mockProblems.filter(p => p.isCompleted).length
-  const progressPercentage = Math.round((solvedProblems / totalProblems) * 100)
+    fetchData();
+  }, []);
 
-  const toggleTopic = (topic: string) => {
-    setSelectedTopics(prev => 
-      prev.includes(topic) 
-        ? prev.filter(t => t !== topic)
-        : [...prev, topic]
-    )
-  }
+  // Get unique categories
+  const categories = useMemo(() => {
+    const categorySet = new Set(problems.map(p => p.category));
+    return Array.from(categorySet);
+  }, [problems]);
 
-  return (
-    <div className="bg-[#f8fafc] min-h-screen">
-      <div className="container mx-auto px-6 py-8">
-        {/* Header Section */}
-        <div className="bg-[#ffffff] rounded-lg p-8 mb-8 shadow-sm border border-[#e2e8f0]">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div>
-              <h1 className="font-[var(--font-display)] text-3xl font-bold text-[#0f172a] mb-2">
-                Problem Bank
-              </h1>
-              <p className="text-[#64748b] text-base">
-                Practice coding problems to sharpen your algorithmic skills
-              </p>
-            </div>
-            
-            {/* Progress Summary */}
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-[#f59e0b]" />
-                <div>
-                  <div className="text-sm text-[#64748b]">Progress</div>
-                  <div className="font-semibold text-[#0f172a]">{progressPercentage}%</div>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-[#10b981]" />
-                <div>
-                  <div className="text-sm text-[#64748b]">Solved</div>
-                  <div className="font-semibold text-[#0f172a]">{solvedProblems}/{totalProblems}</div>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-[#0ea5e9]" />
-                <div>
-                  <div className="text-sm text-[#64748b]">Remaining</div>
-                  <div className="font-semibold text-[#0f172a]">{totalProblems - solvedProblems}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+  // Filter problems
+  const filteredProblems = useMemo(() => {
+    return problems.filter(problem => {
+      const matchesSearch = 
+        problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        problem.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        problem.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const matchesDifficulty = difficultyFilter === "all" || problem.difficulty === difficultyFilter;
+      const matchesCategory = categoryFilter === "all" || problem.category === categoryFilter;
+      
+      const problemStatus = problemStatuses.get(problem.id);
+      const matchesStatus = statusFilter === "all" || 
+        (statusFilter === "solved" && problemStatus?.status === "solved") ||
+        (statusFilter === "attempted" && problemStatus?.status === "attempted") ||
+        (statusFilter === "unsolved" && problemStatus?.status === "unsolved");
 
-        {/* Filters Section */}
-        <div className="bg-[#ffffff] rounded-lg p-6 mb-8 shadow-sm border border-[#e2e8f0]">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#64748b]" />
-              <Input
-                placeholder="Search problems..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-[#ffffff] border-[#e2e8f0] focus:border-[#1e40af] focus:ring-[#1e40af]"
-              />
-            </div>
+      return matchesSearch && matchesDifficulty && matchesCategory && matchesStatus;
+    });
+  }, [problems, searchTerm, difficultyFilter, categoryFilter, statusFilter, problemStatuses]);
 
-            {/* Difficulty Filter */}
-            <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
-              <SelectTrigger className="bg-[#ffffff] border-[#e2e8f0] focus:border-[#1e40af] focus:ring-[#1e40af]">
-                <SelectValue placeholder="Difficulty" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#ffffff] border-[#e2e8f0]">
-                <SelectItem value="all">All Difficulties</SelectItem>
-                <SelectItem value="Easy">Easy</SelectItem>
-                <SelectItem value="Medium">Medium</SelectItem>
-                <SelectItem value="Hard">Hard</SelectItem>
-              </SelectContent>
-            </Select>
+  const handleSubmitCode = async () => {
+    if (!selectedProblem || !userCode.trim()) return;
 
-            {/* Completion Filter */}
-            <Select value={completionFilter} onValueChange={setCompletionFilter}>
-              <SelectTrigger className="bg-[#ffffff] border-[#e2e8f0] focus:border-[#1e40af] focus:ring-[#1e40af]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#ffffff] border-[#e2e8f0]">
-                <SelectItem value="all">All Problems</SelectItem>
-                <SelectItem value="completed">Solved</SelectItem>
-                <SelectItem value="unsolved">Unsolved</SelectItem>
-              </SelectContent>
-            </Select>
+    try {
+      setSubmissionStatus("submitting");
+      
+      const response = await fetch("/api/submit-code", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          problemId: selectedProblem.id,
+          code: userCode,
+          language: "javascript"
+        })
+      });
 
-            {/* Sort By */}
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="bg-[#ffffff] border-[#e2e8f0] focus:border-[#1e40af] focus:ring-[#1e40af]">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#ffffff] border-[#e2e8f0]">
-                <SelectItem value="title">Title</SelectItem>
-                <SelectItem value="difficulty">Difficulty</SelectItem>
-                <SelectItem value="acceptance">Acceptance Rate</SelectItem>
-                <SelectItem value="recent">Recently Added</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      if (!response.ok) {
+        throw new Error("Submission failed");
+      }
 
-          {/* Topic Tags */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Filter className="h-4 w-4 text-[#64748b]" />
-              <span className="text-sm font-medium text-[#475569]">Topics</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {allTopics.map(topic => (
-                <Badge
-                  key={topic}
-                  variant={selectedTopics.includes(topic) ? "default" : "outline"}
-                  className={`cursor-pointer transition-colors ${
-                    selectedTopics.includes(topic)
-                      ? 'bg-[#1e40af] hover:bg-[#3b82f6] text-white border-[#1e40af]'
-                      : 'bg-[#ffffff] hover:bg-[#f1f5f9] text-[#475569] border-[#e2e8f0]'
-                  }`}
-                  onClick={() => toggleTopic(topic)}
-                >
-                  {topic}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        </div>
+      const result = await response.json();
+      setSubmissionStatus("submitted");
+      
+      // Refresh submissions
+      const submissionsRes = await fetch("/api/user-submissions");
+      const submissionsData = await submissionsRes.json();
+      setUserSubmissions(submissionsData);
+      
+      // Update problem status
+      const problemSubmissions = submissionsData.filter(
+        (sub: UserSubmission) => sub.problemId === selectedProblem.id
+      );
+      
+      let status: "solved" | "attempted" | "unsolved" = "unsolved";
+      if (problemSubmissions.some((sub: UserSubmission) => sub.status === "accepted")) {
+        status = "solved";
+      } else if (problemSubmissions.length > 0) {
+        status = "attempted";
+      }
 
-        {/* Problems Grid */}
+      setProblemStatuses(prev => new Map(prev.set(selectedProblem.id, {
+        problemId: selectedProblem.id,
+        status,
+        submissions: problemSubmissions
+      })));
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Submission failed");
+    }
+  };
+
+  const getStatusIcon = (problemId: string) => {
+    const status = problemStatuses.get(problemId)?.status;
+    switch (status) {
+      case "solved":
+        return <CheckCircle className="w-4 h-4 text-green-600" />;
+      case "attempted":
+        return <Clock className="w-4 h-4 text-yellow-600" />;
+      default:
+        return null;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAndSortedProblems.map(problem => (
-            <Card key={problem.id} className="bg-[#ffffff] border-[#e2e8f0] hover:shadow-md transition-shadow group">
-              <CardHeader className="pb-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <h3 className="font-[var(--font-display)] font-semibold text-[#0f172a] text-lg mb-2 group-hover:text-[#1e40af] transition-colors">
-                      {problem.title}
-                    </h3>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Badge className={`${difficultyColors[problem.difficulty]} px-2 py-1 text-xs font-medium`}>
-                        {problem.difficulty}
-                      </Badge>
-                      {problem.recentlyAdded && (
-                        <Badge variant="outline" className="bg-[#0ea5e9] text-white border-[#0ea5e9] px-2 py-1 text-xs">
-                          New
-                        </Badge>
-                      )}
-                      {problem.isCompleted && (
-                        <CheckCircle2 className="h-4 w-4 text-[#10b981]" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Acceptance Rate */}
-                <div className="text-sm text-[#64748b] mb-3">
-                  <span className="font-medium">Acceptance Rate: </span>
-                  <span className="font-semibold text-[#0f172a]">{problem.acceptanceRate}%</span>
-                </div>
-                
-                {/* Topic Tags */}
-                <div className="flex flex-wrap gap-1 mb-4">
-                  {problem.topics.map(topic => (
-                    <Badge
-                      key={topic}
-                      variant="outline"
-                      className="bg-[#f1f5f9] text-[#475569] border-[#e2e8f0] text-xs px-2 py-1"
-                    >
-                      {topic}
-                    </Badge>
-                  ))}
-                </div>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="h-48">
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
               </CardHeader>
-              
-              <CardContent className="pt-0">
-                <Button 
-                  className={`w-full ${
-                    problem.isCompleted 
-                      ? 'bg-[#10b981] hover:bg-[#059669] text-white' 
-                      : 'bg-[#1e40af] hover:bg-[#3b82f6] text-white'
-                  } transition-colors`}
-                >
-                  {problem.isCompleted ? 'Solve Again' : 'Solve Now'}
-                </Button>
+              <CardContent>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-2/3" />
               </CardContent>
             </Card>
           ))}
         </div>
+      </div>
+    );
+  }
 
-        {/* No Results */}
-        {filteredAndSortedProblems.length === 0 && (
-          <div className="bg-[#ffffff] rounded-lg p-12 text-center border border-[#e2e8f0]">
-            <div className="text-[#64748b] text-lg mb-2">No problems found</div>
-            <p className="text-[#64748b]">Try adjusting your filters or search terms</p>
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <Alert variant="destructive">
+          <XCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col space-y-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Problem Bank</h1>
+          <Badge variant="outline" className="text-sm">
+            {filteredProblems.length} problems
+          </Badge>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Search problems, descriptions, or tags..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
-        )}
+          
+          <div className="flex gap-2">
+            <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Difficulty" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Levels</SelectItem>
+                <SelectItem value="easy">Easy</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="hard">Hard</SelectItem>
+              </SelectContent>
+            </Select>
 
-        {/* Results Count */}
-        <div className="mt-8 text-center text-[#64748b]">
-          Showing {filteredAndSortedProblems.length} of {totalProblems} problems
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map(category => (
+                  <SelectItem key={category} value={category}>{category}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="solved">Solved</SelectItem>
+                <SelectItem value="attempted">Attempted</SelectItem>
+                <SelectItem value="unsolved">Unsolved</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
-    </div>
-  )
-}
+
+      {/* Problem Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredProblems.map((problem) => {
+          const problemStatus = problemStatuses.get(problem.id);
+          return (
+            <Dialog key={problem.id} onOpenChange={(open) => {
+              if (open) {
+                setSelectedProblem(problem);
+                setUserCode(problem.solutionTemplate || "");
+                setActiveTab("description");
+                setSubmissionStatus("idle");
+              }
+            }}>
+              <DialogTrigger asChild>
+                <Card className="cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] group">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(problem.id)}
+                        <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                          {problem.title}
+                        </CardTitle>
+                      </div>
+                      <Badge 
+                        variant="outline" 
+                        className={difficultyConfig[problem.difficulty].color}
+                      >
+                        {difficultyConfig[problem.difficulty].label}
+                      </Badge>
+                    </div>
+                    <CardDescription className="line-clamp-2">
+                      {problem.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-3 h-3 text-gray-400" />
+                        <span className="text-sm text-gray-600">{problem.category}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Users className="w-3 h-3 text-gray-400" />
+                        <span className="text-xs text-gray-500">
+                          {problemStatus?.submissions.length || 0}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {problem.tags.slice(0, 3).map(tag => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                      {problem.tags.length > 3 && (
+                        <Badge variant="secondary" className="text-xs">
+                          +{problem.tags.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </DialogTrigger>
+
+              <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
+                <DialogHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {getStatusIcon(problem.id)}
+                      <DialogTitle className="text-xl">{problem.title}</DialogTitle>
+                      <Badge 
+                        variant="outline" 
+                        className={difficultyConfig[problem.difficulty].color}
+                      >
+                        {difficultyConfig[problem.difficulty].label}
+                      </Badge>
+                    </div>
+                  </div>
+                </DialogHeader>
+
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+                  <TabsList className

@@ -1,440 +1,502 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { 
-  Calendar, 
-  Clock, 
-  BookOpen, 
-  Target, 
-  TrendingUp, 
-  Award,
-  CheckCircle,
-  AlertCircle,
-  BarChart3,
-  Flame
-} from "lucide-react"
-
-interface StudySession {
-  id: string
-  subject: string
-  topic: string
-  time: string
-  duration: number
-  completed: boolean
-  priority: "high" | "medium" | "low"
-}
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar, Clock, BookOpen, TrendingUp, Plus, Edit, Trash2, RefreshCcw, AlertCircle } from "lucide-react";
 
 interface Subject {
-  id: string
-  name: string
-  code: string
-  progress: number
-  totalHours: number
-  completedHours: number
-  color: string
+  id: string;
+  name: string;
+  color: string;
+  description?: string;
 }
 
-interface Assignment {
-  id: string
-  title: string
-  subject: string
-  dueDate: string
-  priority: "high" | "medium" | "low"
-  completed: boolean
+interface StudySchedule {
+  id: string;
+  subject_id: string;
+  title: string;
+  description?: string;
+  start_time: string;
+  end_time: string;
+  date: string;
+  is_completed: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
-export default function StudyTimetableDashboard() {
-  const [selectedDay, setSelectedDay] = useState(new Date().getDay())
-  const [sessions, setSessions] = useState<StudySession[]>([
-    {
-      id: "1",
-      subject: "Data Structures",
-      topic: "Binary Trees",
-      time: "09:00",
-      duration: 90,
-      completed: true,
-      priority: "high"
-    },
-    {
-      id: "2",
-      subject: "Algorithms",
-      topic: "Dynamic Programming",
-      time: "11:00",
-      duration: 120,
-      completed: false,
-      priority: "high"
-    },
-    {
-      id: "3",
-      subject: "Computer Networks",
-      topic: "TCP/IP Protocol",
-      time: "14:00",
-      duration: 60,
-      completed: false,
-      priority: "medium"
-    },
-    {
-      id: "4",
-      subject: "Database Systems",
-      topic: "Query Optimization",
-      time: "16:00",
-      duration: 90,
-      completed: false,
-      priority: "medium"
+interface UserProgress {
+  id: string;
+  user_id: string;
+  subject_id: string;
+  total_hours: number;
+  completed_sessions: number;
+  last_session: string;
+  streak_days: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface NewScheduleForm {
+  subject_id: string;
+  title: string;
+  description: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+}
+
+export const StudyTimetableDashboard = () => {
+  const [schedules, setSchedules] = useState<StudySchedule[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [progress, setProgress] = useState<UserProgress[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeView, setActiveView] = useState<"daily" | "weekly">("daily");
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState<StudySchedule | null>(null);
+  const [formData, setFormData] = useState<NewScheduleForm>({
+    subject_id: "",
+    title: "",
+    description: "",
+    date: new Date().toISOString().split('T')[0],
+    start_time: "",
+    end_time: ""
+  });
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const [schedulesRes, subjectsRes, progressRes] = await Promise.all([
+        fetch('/api/study-schedules'),
+        fetch('/api/subjects'),
+        fetch('/api/user-progress')
+      ]);
+
+      if (!schedulesRes.ok || !subjectsRes.ok || !progressRes.ok) {
+        throw new Error('Failed to fetch data');
+      }
+
+      const [schedulesData, subjectsData, progressData] = await Promise.all([
+        schedulesRes.json(),
+        subjectsRes.json(),
+        progressRes.json()
+      ]);
+
+      setSchedules(schedulesData);
+      setSubjects(subjectsData);
+      setProgress(progressData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
     }
-  ])
+  };
 
-  const subjects: Subject[] = [
-    {
-      id: "1",
-      name: "Data Structures & Algorithms",
-      code: "DSA",
-      progress: 78,
-      totalHours: 120,
-      completedHours: 94,
-      color: "bg-chart-1"
-    },
-    {
-      id: "2",
-      name: "Computer Networks",
-      code: "CN",
-      progress: 65,
-      totalHours: 80,
-      completedHours: 52,
-      color: "bg-chart-2"
-    },
-    {
-      id: "3",
-      name: "Database Systems",
-      code: "DBMS",
-      progress: 82,
-      totalHours: 100,
-      completedHours: 82,
-      color: "bg-chart-3"
-    },
-    {
-      id: "4",
-      name: "Operating Systems",
-      code: "OS",
-      progress: 59,
-      totalHours: 90,
-      completedHours: 53,
-      color: "bg-chart-4"
-    }
-  ]
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  const assignments: Assignment[] = [
-    {
-      id: "1",
-      title: "Implement Red-Black Tree",
-      subject: "Data Structures",
-      dueDate: "2024-01-15",
-      priority: "high",
-      completed: false
-    },
-    {
-      id: "2",
-      title: "Network Protocol Analysis",
-      subject: "Computer Networks",
-      dueDate: "2024-01-18",
-      priority: "medium",
-      completed: false
-    },
-    {
-      id: "3",
-      title: "Database Query Optimization",
-      subject: "Database Systems",
-      dueDate: "2024-01-20",
-      priority: "high",
-      completed: true
-    },
-    {
-      id: "4",
-      title: "Process Synchronization Report",
-      subject: "Operating Systems",
-      dueDate: "2024-01-22",
-      priority: "medium",
-      completed: false
-    }
-  ]
+  const getSubjectById = (id: string) => subjects.find(s => s.id === id);
 
-  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-  const currentWeekHours = [2.5, 4.0, 3.5, 5.0, 4.5, 3.0, 2.0]
-  const studyStreak = 15
-  const totalStudyHours = 24.5
+  const getTodaySchedules = () => {
+    const today = new Date().toISOString().split('T')[0];
+    return schedules.filter(s => s.date === today);
+  };
 
-  const toggleSessionComplete = (sessionId: string) => {
-    setSessions(prev => prev.map(session => 
-      session.id === sessionId 
-        ? { ...session, completed: !session.completed }
-        : session
-    ))
-  }
+  const getSelectedDateSchedules = () => {
+    return schedules.filter(s => s.date === selectedDate);
+  };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high": return "bg-destructive text-destructive-foreground"
-      case "medium": return "bg-warning text-white"
-      case "low": return "bg-muted text-muted-foreground"
-      default: return "bg-muted text-muted-foreground"
-    }
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const today = new Date()
-    const diffTime = date.getTime() - today.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  const getWeekSchedules = () => {
+    const startOfWeek = new Date(selectedDate);
+    const day = startOfWeek.getDay();
+    const diff = startOfWeek.getDate() - day;
+    startOfWeek.setDate(diff);
     
-    if (diffDays === 0) return "Today"
-    if (diffDays === 1) return "Tomorrow"
-    if (diffDays < 7) return `${diffDays} days`
-    return date.toLocaleDateString()
-  }
+    const weekSchedules = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startOfWeek);
+      date.setDate(startOfWeek.getDate() + i);
+      const dateStr = date.toISOString().split('T')[0];
+      weekSchedules.push({
+        date: dateStr,
+        day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+        schedules: schedules.filter(s => s.date === dateStr)
+      });
+    }
+    return weekSchedules;
+  };
 
-  return (
-    <div className="bg-background min-h-screen p-4 md:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-              Study Dashboard
-            </h1>
-            <p className="text-muted-foreground text-sm md:text-base">
-              Track your progress and manage your study schedule
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-surface rounded-lg px-3 py-2 border">
-              <Flame className="h-4 w-4 text-warning" />
-              <span className="text-sm font-medium">{studyStreak} day streak</span>
-            </div>
-            <Button className="bg-primary hover:bg-primary-light">
-              <Calendar className="h-4 w-4 mr-2" />
-              Add Session
-            </Button>
-          </div>
+  const calculateStats = () => {
+    const totalHours = progress.reduce((sum, p) => sum + p.total_hours, 0);
+    const completedSessions = progress.reduce((sum, p) => sum + p.completed_sessions, 0);
+    const maxStreak = Math.max(...progress.map(p => p.streak_days), 0);
+    const upcomingSessions = schedules.filter(s => !s.is_completed && new Date(s.date) >= new Date()).length;
+    
+    return { totalHours, completedSessions, maxStreak, upcomingSessions };
+  };
+
+  const handleCreateSchedule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/study-schedules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) throw new Error('Failed to create schedule');
+
+      await fetchData();
+      setIsCreateModalOpen(false);
+      setFormData({
+        subject_id: "",
+        title: "",
+        description: "",
+        date: new Date().toISOString().split('T')[0],
+        start_time: "",
+        end_time: ""
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create schedule');
+    }
+  };
+
+  const handleUpdateSchedule = async (id: string, updates: Partial<StudySchedule>) => {
+    try {
+      const response = await fetch(`/api/study-schedules/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+
+      if (!response.ok) throw new Error('Failed to update schedule');
+
+      await fetchData();
+      setEditingSchedule(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update schedule');
+    }
+  };
+
+  const handleDeleteSchedule = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this schedule?')) return;
+    
+    try {
+      const response = await fetch(`/api/study-schedules/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) throw new Error('Failed to delete schedule');
+
+      await fetchData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete schedule');
+    }
+  };
+
+  const toggleComplete = async (schedule: StudySchedule) => {
+    await handleUpdateSchedule(schedule.id, { is_completed: !schedule.is_completed });
+  };
+
+  const stats = calculateStats();
+
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-10 w-32" />
         </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-surface border border-border hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Clock className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">This Week</p>
-                  <p className="text-xl font-semibold font-display">{totalStudyHours}h</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-surface border border-border hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-success/10 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-success" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="text-xl font-semibold font-display">
-                    {sessions.filter(s => s.completed).length}/{sessions.length}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-surface border border-border hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-accent/10 rounded-lg">
-                  <TrendingUp className="h-5 w-5 text-accent" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Avg Progress</p>
-                  <p className="text-xl font-semibold font-display">
-                    {Math.round(subjects.reduce((acc, s) => acc + s.progress, 0) / subjects.length)}%
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-surface border border-border hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-warning/10 rounded-lg">
-                  <Award className="h-5 w-5 text-warning" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Achievements</p>
-                  <p className="text-xl font-semibold font-display">12</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-8 w-16" />
+              </CardHeader>
+            </Card>
+          ))}
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Weekly Overview */}
-          <Card className="bg-surface border border-border">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 font-display">
-                <BarChart3 className="h-5 w-5 text-primary" />
-                Weekly Overview
-              </CardTitle>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-7 gap-2">
-                {weekDays.map((day, index) => (
-                  <div key={day} className="text-center">
-                    <div className="text-xs text-muted-foreground mb-2">{day}</div>
-                    <div 
-                      className={`h-16 rounded-lg border-2 transition-all cursor-pointer flex items-end justify-center pb-2 ${
-                        selectedDay === index 
-                          ? 'border-primary bg-primary/5' 
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                      onClick={() => setSelectedDay(index)}
-                    >
-                      <div 
-                        className="w-3 bg-primary rounded-t"
-                        style={{ height: `${(currentWeekHours[index] / 5) * 100}%` }}
-                      />
-                    </div>
-                    <div className="text-xs mt-1 font-medium">{currentWeekHours[index]}h</div>
-                  </div>
+            <CardContent>
+              <div className="space-y-4">
+                {[1, 2, 3].map(i => (
+                  <Skeleton key={i} className="h-16 w-full" />
                 ))}
               </div>
             </CardContent>
           </Card>
-
-          {/* Today's Schedule */}
-          <Card className="bg-surface border border-border">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 font-display">
-                <Calendar className="h-5 w-5 text-primary" />
-                Today's Schedule
-              </CardTitle>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
             </CardHeader>
-            <CardContent className="space-y-3">
-              {sessions.map((session) => (
-                <div 
-                  key={session.id}
-                  className={`flex items-center gap-3 p-3 rounded-lg border transition-all hover:shadow-sm ${
-                    session.completed ? 'bg-success/5 border-success/20' : 'bg-surface border-border'
-                  }`}
-                >
-                  <Checkbox 
-                    checked={session.completed}
-                    onCheckedChange={() => toggleSessionComplete(session.id)}
-                    className="data-[state=checked]:bg-success data-[state=checked]:border-success"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-sm font-medium ${session.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                        {session.subject}
-                      </span>
-                      <Badge variant="outline" size="sm" className={getPriorityColor(session.priority)}>
-                        {session.priority}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{session.topic}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {session.time} • {session.duration} min
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Subject Progress */}
-          <Card className="bg-surface border border-border">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 font-display">
-                <BookOpen className="h-5 w-5 text-primary" />
-                Subject Progress
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {subjects.map((subject) => (
-                <div key={subject.id} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${subject.color}`} />
-                      <span className="text-sm font-medium">{subject.name}</span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      {subject.completedHours}/{subject.totalHours}h
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Progress value={subject.progress} className="flex-1" />
-                    <span className="text-sm font-medium min-w-[3rem] text-right">
-                      {subject.progress}%
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Upcoming Deadlines */}
-          <Card className="bg-surface border border-border">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 font-display">
-                <Target className="h-5 w-5 text-primary" />
-                Upcoming Deadlines
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {assignments.map((assignment) => (
-                <div 
-                  key={assignment.id}
-                  className={`flex items-center gap-3 p-3 rounded-lg border transition-all hover:shadow-sm ${
-                    assignment.completed ? 'bg-success/5 border-success/20' : 'bg-surface border-border'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 flex-1">
-                    {assignment.completed ? (
-                      <CheckCircle className="h-4 w-4 text-success flex-shrink-0" />
-                    ) : (
-                      <AlertCircle className="h-4 w-4 text-warning flex-shrink-0" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-sm font-medium ${assignment.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                          {assignment.title}
-                        </span>
-                        <Badge variant="outline" size="sm" className={getPriorityColor(assignment.priority)}>
-                          {assignment.priority}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground">{assignment.subject}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Due: {formatDate(assignment.dueDate)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <CardContent>
+              <div className="space-y-4">
+                {[1, 2, 3].map(i => (
+                  <Skeleton key={i} className="h-12 w-full" />
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
       </div>
-    </div>
-  )
-}
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <Card className="border-destructive">
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2 text-destructive">
+              <AlertCircle className="h-5 w-5" />
+              <span className="font-medium">Error loading data</span>
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">{error}</p>
+            <Button onClick={fetchData} className="mt-4" variant="outline">
+              <RefreshCcw className="w-4 h-4 mr-2" />
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Study Dashboard</h1>
+          <p className="text-muted-foreground">Manage your study schedule and track progress</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button onClick={fetchData} variant="outline" size="sm">
+            <RefreshCcw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+          <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Session
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create Study Session</DialogTitle>
+                <DialogDescription>
+                  Schedule a new study session for your subjects
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleCreateSchedule} className="space-y-4">
+                <div>
+                  <Label htmlFor="subject">Subject</Label>
+                  <Select value={formData.subject_id} onValueChange={(value) => setFormData(prev => ({ ...prev, subject_id: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a subject" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {subjects.map(subject => (
+                        <SelectItem key={subject.id} value={subject.id}>
+                          {subject.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="title">Title</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="Study session title"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Input
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Optional description"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="date">Date</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="start_time">Start Time</Label>
+                    <Input
+                      id="start_time"
+                      type="time"
+                      value={formData.start_time}
+                      onChange={(e) => setFormData(prev => ({ ...prev, start_time: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="end_time">End Time</Label>
+                    <Input
+                      id="end_time"
+                      type="time"
+                      value={formData.end_time}
+                      onChange={(e) => setFormData(prev => ({ ...prev, end_time: e.target.value }))}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">Create Session</Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Hours</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalHours}</div>
+            <p className="text-xs text-muted-foreground">
+              Study time completed
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Completed Sessions</CardTitle>
+            <BookOpen className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.completedSessions}</div>
+            <p className="text-xs text-muted-foreground">
+              Sessions finished
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.maxStreak}</div>
+            <p className="text-xs text-muted-foreground">
+              Days in a row
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Upcoming Sessions</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.upcomingSessions}</div>
+            <p className="text-xs text-muted-foreground">
+              Sessions scheduled
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Schedule Views */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Study Schedule</CardTitle>
+                <Tabs value={activeView} onValueChange={(value) => setActiveView(value as "daily" | "weekly")}>
+                  <TabsList>
+                    <TabsTrigger value="daily">Daily</TabsTrigger>
+                    <TabsTrigger value="weekly">Weekly</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-auto"
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {activeView === "daily" ? (
+                <div className="space-y-4">
+                  {getSelectedDateSchedules().length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No sessions scheduled for this date</p>
+                    </div>
+                  ) : (
+                    getSelectedDateSchedules()
+                      .sort((a, b) => a.start_time.localeCompare(b.start_time))
+                      .map(schedule => {
+                        const subject = getSubjectById(schedule.subject_id);
+                        return (
+                          <div
+                            key={schedule.id}
+                            className={`p-4 rounded-lg border-l-4 transition-all duration-200 hover:shadow-md ${
+                              schedule.is_completed 
+                                ? 'bg-green-50 border-l-green-500 opacity-75' 
+                                : 'bg-card border-l-primary'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <h4 className={`font-semibold ${schedule.is_completed ? 'line-through text-muted-foreground' : ''}`}>
+                                    {schedule.title}
+                                  </h4>
+                                  {subject && (
+                                    <Badge variant="secondary" style={{ backgroundColor: subject.color + '20', color: subject.color }}>
+                                      {subject.name}
+                                    </Badge>
+                                  )}
+                                  {schedule.is_completed && (
+                                    <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-100">
+                                      Completed
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center space-x-4 text-sm text-mute

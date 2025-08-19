@@ -1,482 +1,480 @@
-"use client"
+"use client";
 
-import { useState, useMemo } from "react"
-import { Search, Calendar, Filter, MoreHorizontal, Plus, CheckCircle2, Clock, AlertTriangle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Calendar, Plus, Search, Filter, SortAsc, SortDesc, Edit, Trash2, Clock, AlertTriangle, CheckCircle, Eye, EyeOff, BookOpen, Target, Calendar as CalendarIcon } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 interface Assignment {
-  id: string
-  title: string
-  subject: string
-  dueDate: string
-  priority: "low" | "medium" | "high"
-  status: "pending" | "in-progress" | "completed"
-  description?: string
+  id: string;
+  title: string;
+  description: string;
+  subjectId: string;
+  dueDate: string;
+  points: number;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  status: 'Not Started' | 'In Progress' | 'Completed' | 'Overdue';
+  createdAt: string;
+  updatedAt: string;
 }
 
-const mockAssignments: Assignment[] = [
-  {
-    id: "1",
-    title: "Binary Search Tree Implementation",
-    subject: "Data Structures",
-    dueDate: "2024-01-15",
-    priority: "high",
-    status: "pending",
-    description: "Implement BST with insert, delete, and search operations"
-  },
-  {
-    id: "2",
-    title: "Dynamic Programming Problems",
-    subject: "Algorithms",
-    dueDate: "2024-01-20",
-    priority: "medium",
-    status: "in-progress",
-    description: "Solve 10 DP problems from LeetCode"
-  },
-  {
-    id: "3",
-    title: "Graph Traversal Algorithms",
-    subject: "Algorithms",
-    dueDate: "2024-01-12",
-    priority: "high",
-    status: "completed",
-    description: "Implement BFS and DFS algorithms"
-  },
-  {
-    id: "4",
-    title: "Hash Table Analysis",
-    subject: "Data Structures",
-    dueDate: "2024-01-10",
-    priority: "low",
-    status: "completed",
-    description: "Analyze time complexity of hash operations"
-  },
-  {
-    id: "5",
-    title: "Sorting Algorithm Comparison",
-    subject: "Algorithms",
-    dueDate: "2024-01-08",
-    priority: "medium",
-    status: "pending",
-    description: "Compare performance of different sorting algorithms"
-  }
-]
+interface Subject {
+  id: string;
+  name: string;
+  code: string;
+  color: string;
+}
 
-const subjects = ["All Subjects", "Data Structures", "Algorithms", "System Design", "Mathematics"]
-const statuses = ["All Status", "pending", "in-progress", "completed"]
-const priorities = ["All Priority", "low", "medium", "high"]
+interface AssignmentFormData {
+  title: string;
+  description: string;
+  subjectId: string;
+  dueDate: string;
+  points: number;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+}
 
-export default function AssignmentTracker() {
-  const [assignments, setAssignments] = useState<Assignment[]>(mockAssignments)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [subjectFilter, setSubjectFilter] = useState("All Subjects")
-  const [statusFilter, setStatusFilter] = useState("All Status")
-  const [priorityFilter, setPriorityFilter] = useState("All Priority")
-  const [sortBy, setSortBy] = useState("dueDate")
+export const AssignmentTracker = () => {
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState<string>('all');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'dueDate' | 'points' | 'difficulty'>('dueDate');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
+  const [expandedAssignments, setExpandedAssignments] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
 
-  const filteredAndSortedAssignments = useMemo(() => {
-    let filtered = assignments.filter(assignment => {
-      const matchesSearch = assignment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           assignment.subject.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesSubject = subjectFilter === "All Subjects" || assignment.subject === subjectFilter
-      const matchesStatus = statusFilter === "All Status" || assignment.status === statusFilter
-      const matchesPriority = priorityFilter === "All Priority" || assignment.priority === priorityFilter
+  const [formData, setFormData] = useState<AssignmentFormData>({
+    title: '',
+    description: '',
+    subjectId: '',
+    dueDate: '',
+    points: 100,
+    difficulty: 'Medium'
+  });
 
-      return matchesSearch && matchesSubject && matchesStatus && matchesPriority
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [assignmentsResponse, subjectsResponse] = await Promise.all([
+        fetch('/api/assignments'),
+        fetch('/api/subjects')
+      ]);
+
+      if (!assignmentsResponse.ok || !subjectsResponse.ok) {
+        throw new Error('Failed to fetch data');
+      }
+
+      const assignmentsData = await assignmentsResponse.json();
+      const subjectsData = await subjectsResponse.json();
+
+      setAssignments(assignmentsData);
+      setSubjects(subjectsData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      toast.error('Failed to load assignments');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getDueDateStatus = (dueDate: string) => {
+    const now = new Date();
+    const due = new Date(dueDate);
+    const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return 'overdue';
+    if (diffDays === 0) return 'due-today';
+    if (diffDays <= 3) return 'due-soon';
+    return 'upcoming';
+  };
+
+  const getDueDateBadge = (dueDate: string, status: string) => {
+    const dueDateStatus = getDueDateStatus(dueDate);
+    const date = new Date(dueDate).toLocaleDateString();
+
+    switch (dueDateStatus) {
+      case 'overdue':
+        return <Badge variant="destructive" className="gap-1"><AlertTriangle className="w-3 h-3" />Overdue {date}</Badge>;
+      case 'due-today':
+        return <Badge variant="destructive" className="gap-1"><Clock className="w-3 h-3" />Due Today</Badge>;
+      case 'due-soon':
+        return <Badge variant="secondary" className="gap-1"><Clock className="w-3 h-3" />Due {date}</Badge>;
+      default:
+        return <Badge variant="outline" className="gap-1"><CalendarIcon className="w-3 h-3" />{date}</Badge>;
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'Completed':
+        return <Badge className="bg-green-100 text-green-800 gap-1"><CheckCircle className="w-3 h-3" />Completed</Badge>;
+      case 'In Progress':
+        return <Badge className="bg-blue-100 text-blue-800 gap-1"><Clock className="w-3 h-3" />In Progress</Badge>;
+      case 'Overdue':
+        return <Badge variant="destructive" className="gap-1"><AlertTriangle className="w-3 h-3" />Overdue</Badge>;
+      default:
+        return <Badge variant="outline" className="gap-1">Not Started</Badge>;
+    }
+  };
+
+  const getDifficultyBadge = (difficulty: string) => {
+    const colors = {
+      Easy: 'bg-green-100 text-green-800',
+      Medium: 'bg-yellow-100 text-yellow-800',
+      Hard: 'bg-red-100 text-red-800'
+    };
+    return <Badge className={colors[difficulty as keyof typeof colors] || 'bg-gray-100 text-gray-800'}>{difficulty}</Badge>;
+  };
+
+  const filteredAndSortedAssignments = assignments
+    .filter(assignment => {
+      const matchesSearch = assignment.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          assignment.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSubject = selectedSubject === 'all' || assignment.subjectId === selectedSubject;
+      const matchesDifficulty = selectedDifficulty === 'all' || assignment.difficulty === selectedDifficulty;
+      const matchesStatus = selectedStatus === 'all' || assignment.status === selectedStatus;
+
+      return matchesSearch && matchesSubject && matchesDifficulty && matchesStatus;
     })
-
-    return filtered.sort((a, b) => {
+    .sort((a, b) => {
+      let aValue, bValue;
+      
       switch (sortBy) {
-        case "dueDate":
-          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
-        case "priority":
-          const priorityOrder = { "high": 3, "medium": 2, "low": 1 }
-          return priorityOrder[b.priority] - priorityOrder[a.priority]
-        case "title":
-          return a.title.localeCompare(b.title)
-        case "subject":
-          return a.subject.localeCompare(b.subject)
+        case 'dueDate':
+          aValue = new Date(a.dueDate).getTime();
+          bValue = new Date(b.dueDate).getTime();
+          break;
+        case 'points':
+          aValue = a.points;
+          bValue = b.points;
+          break;
+        case 'difficulty':
+          const difficultyOrder = { Easy: 1, Medium: 2, Hard: 3 };
+          aValue = difficultyOrder[a.difficulty];
+          bValue = difficultyOrder[b.difficulty];
+          break;
         default:
-          return 0
+          return 0;
       }
-    })
-  }, [assignments, searchTerm, subjectFilter, statusFilter, priorityFilter, sortBy])
 
-  const stats = useMemo(() => {
-    const total = assignments.length
-    const completed = assignments.filter(a => a.status === "completed").length
-    const pending = assignments.filter(a => a.status === "pending").length
-    const overdue = assignments.filter(a => 
-      a.status !== "completed" && new Date(a.dueDate) < new Date()
-    ).length
+      return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+    });
 
-    return { total, completed, pending, overdue }
-  }, [assignments])
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const url = editingAssignment ? `/api/assignments/${editingAssignment.id}` : '/api/assignments';
+      const method = editingAssignment ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high": return "bg-destructive text-destructive-foreground"
-      case "medium": return "bg-warning text-white"
-      case "low": return "bg-muted text-muted-foreground"
-      default: return "bg-muted text-muted-foreground"
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed": return "text-success"
-      case "in-progress": return "text-accent"
-      case "pending": return "text-warning"
-      default: return "text-muted-foreground"
-    }
-  }
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "completed": return <CheckCircle2 className="h-4 w-4" />
-      case "in-progress": return <Clock className="h-4 w-4" />
-      case "pending": return <AlertTriangle className="h-4 w-4" />
-      default: return <Clock className="h-4 w-4" />
-    }
-  }
-
-  const isOverdue = (assignment: Assignment) => {
-    return assignment.status !== "completed" && new Date(assignment.dueDate) < new Date()
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    })
-  }
-
-  const toggleStatus = (id: string) => {
-    setAssignments(prev => prev.map(assignment => {
-      if (assignment.id === id) {
-        const statusOrder = ["pending", "in-progress", "completed"]
-        const currentIndex = statusOrder.indexOf(assignment.status)
-        const nextIndex = (currentIndex + 1) % statusOrder.length
-        return { ...assignment, status: statusOrder[nextIndex] as Assignment["status"] }
+      if (!response.ok) {
+        throw new Error('Failed to save assignment');
       }
-      return assignment
-    }))
+
+      await fetchData();
+      toast.success(editingAssignment ? 'Assignment updated successfully' : 'Assignment created successfully');
+      
+      setIsCreateDialogOpen(false);
+      setIsEditDialogOpen(false);
+      setEditingAssignment(null);
+      setFormData({
+        title: '',
+        description: '',
+        subjectId: '',
+        dueDate: '',
+        points: 100,
+        difficulty: 'Medium'
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'An error occurred');
+    }
+  };
+
+  const handleEdit = (assignment: Assignment) => {
+    setEditingAssignment(assignment);
+    setFormData({
+      title: assignment.title,
+      description: assignment.description,
+      subjectId: assignment.subjectId,
+      dueDate: assignment.dueDate.split('T')[0],
+      points: assignment.points,
+      difficulty: assignment.difficulty
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this assignment?')) return;
+
+    try {
+      const response = await fetch(`/api/assignments/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete assignment');
+      }
+
+      await fetchData();
+      toast.success('Assignment deleted successfully');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'An error occurred');
+    }
+  };
+
+  const toggleExpanded = (id: string) => {
+    const newExpanded = new Set(expandedAssignments);
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id);
+    } else {
+      newExpanded.add(id);
+    }
+    setExpandedAssignments(newExpanded);
+  };
+
+  const toggleSort = (field: 'dueDate' | 'points' | 'difficulty') => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="flex gap-4">
+          <Skeleton className="h-10 flex-1" />
+          <Skeleton className="h-10 w-40" />
+          <Skeleton className="h-10 w-40" />
+          <Skeleton className="h-10 w-40" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-2/3" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
   }
 
-  const deleteAssignment = (id: string) => {
-    setAssignments(prev => prev.filter(assignment => assignment.id !== id))
+  if (error) {
+    return (
+      <Card className="border-destructive">
+        <CardContent className="pt-6">
+          <div className="text-center text-destructive">
+            <AlertTriangle className="w-12 h-12 mx-auto mb-4" />
+            <p className="text-lg font-semibold mb-2">Error Loading Assignments</p>
+            <p className="text-sm text-muted-foreground mb-4">{error}</p>
+            <Button onClick={fetchData} variant="outline">
+              Try Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
-    <div className="bg-surface min-h-screen p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground font-display">Assignment Tracker</h1>
-            <p className="text-muted-foreground mt-1">Manage and track your assignments efficiently</p>
-          </div>
-          <Button className="bg-primary hover:bg-primary-light text-primary-foreground">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Assignment
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Assignment Tracker</h1>
+          <p className="text-muted-foreground">Manage and track your assignments</p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant={viewMode === 'cards' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('cards')}
+          >
+            Cards
           </Button>
-        </div>
-
-        {/* Progress Summary */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-surface border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total</p>
-                  <p className="text-2xl font-bold text-foreground">{stats.total}</p>
-                </div>
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Calendar className="h-4 w-4 text-primary" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-surface border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="text-2xl font-bold text-success">{stats.completed}</p>
-                </div>
-                <div className="h-8 w-8 rounded-full bg-success/10 flex items-center justify-center">
-                  <CheckCircle2 className="h-4 w-4 text-success" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-surface border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold text-warning">{stats.pending}</p>
-                </div>
-                <div className="h-8 w-8 rounded-full bg-warning/10 flex items-center justify-center">
-                  <Clock className="h-4 w-4 text-warning" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-surface border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Overdue</p>
-                  <p className="text-2xl font-bold text-destructive">{stats.overdue}</p>
-                </div>
-                <div className="h-8 w-8 rounded-full bg-destructive/10 flex items-center justify-center">
-                  <AlertTriangle className="h-4 w-4 text-destructive" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filters and Search */}
-        <Card className="bg-surface border-border">
-          <CardContent className="p-6">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search assignments..."
-                  className="pl-10 bg-background border-input"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <Select value={subjectFilter} onValueChange={setSubjectFilter}>
-                  <SelectTrigger className="w-40 bg-background border-input">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {subjects.map((subject) => (
-                      <SelectItem key={subject} value={subject}>
-                        {subject}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-32 bg-background border-input">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statuses.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status === "All Status" ? status : status.charAt(0).toUpperCase() + status.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                  <SelectTrigger className="w-32 bg-background border-input">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {priorities.map((priority) => (
-                      <SelectItem key={priority} value={priority}>
-                        {priority === "All Priority" ? priority : priority.charAt(0).toUpperCase() + priority.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-32 bg-background border-input">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="dueDate">Due Date</SelectItem>
-                    <SelectItem value="priority">Priority</SelectItem>
-                    <SelectItem value="title">Title</SelectItem>
-                    <SelectItem value="subject">Subject</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Assignment List */}
-        <Card className="bg-surface border-border">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-semibold text-foreground">
-              Assignments ({filteredAndSortedAssignments.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <div className="min-w-full">
-                {/* Header Row - Hidden on mobile */}
-                <div className="hidden md:grid md:grid-cols-12 gap-4 px-6 py-3 bg-muted/30 border-b border-border text-sm font-medium text-muted-foreground">
-                  <div className="col-span-4">Assignment</div>
-                  <div className="col-span-2">Subject</div>
-                  <div className="col-span-2">Due Date</div>
-                  <div className="col-span-1">Priority</div>
-                  <div className="col-span-2">Status</div>
-                  <div className="col-span-1">Actions</div>
-                </div>
-
-                {/* Assignment Rows */}
-                {filteredAndSortedAssignments.length === 0 ? (
-                  <div className="p-8 text-center text-muted-foreground">
-                    <Filter className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg font-medium">No assignments found</p>
-                    <p className="text-sm">Try adjusting your filters or search terms</p>
+          <Button
+            variant={viewMode === 'table' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('table')}
+          >
+            Table
+          </Button>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <Plus className="w-4 h-4" />
+                New Assignment
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <form onSubmit={handleSubmit}>
+                <DialogHeader>
+                  <DialogTitle>Create New Assignment</DialogTitle>
+                  <DialogDescription>
+                    Add a new assignment to track progress and deadlines.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Title</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      required
+                    />
                   </div>
-                ) : (
-                  filteredAndSortedAssignments.map((assignment) => (
-                    <div
-                      key={assignment.id}
-                      className={`grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 border-b border-border hover:bg-muted/20 transition-colors ${
-                        isOverdue(assignment) ? 'bg-destructive/5' : ''
-                      }`}
-                    >
-                      {/* Mobile Layout */}
-                      <div className="md:hidden space-y-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h3 className="font-medium text-foreground text-base">{assignment.title}</h3>
-                            <p className="text-sm text-muted-foreground mt-1">{assignment.subject}</p>
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => toggleStatus(assignment.id)}>
-                                Toggle Status
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => deleteAssignment(assignment.id)}
-                                className="text-destructive"
-                              >
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Badge className={getPriorityColor(assignment.priority)} variant="secondary">
-                              {assignment.priority.toUpperCase()}
-                            </Badge>
-                            <span className={`flex items-center gap-1 text-sm ${getStatusColor(assignment.status)}`}>
-                              {getStatusIcon(assignment.status)}
-                              {assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)}
-                            </span>
-                          </div>
-                          <div className={`text-sm ${isOverdue(assignment) ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
-                            {formatDate(assignment.dueDate)}
-                            {isOverdue(assignment) && <span className="ml-1">(Overdue)</span>}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Desktop Layout */}
-                      <div className="hidden md:contents">
-                        <div className="col-span-4 flex flex-col">
-                          <h3 className="font-medium text-foreground text-sm">{assignment.title}</h3>
-                          {assignment.description && (
-                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                              {assignment.description}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="col-span-2 flex items-center">
-                          <span className="text-sm text-foreground">{assignment.subject}</span>
-                        </div>
-
-                        <div className="col-span-2 flex items-center">
-                          <span className={`text-sm ${isOverdue(assignment) ? 'text-destructive font-medium' : 'text-foreground'}`}>
-                            {formatDate(assignment.dueDate)}
-                            {isOverdue(assignment) && (
-                              <span className="block text-xs text-destructive">Overdue</span>
-                            )}
-                          </span>
-                        </div>
-
-                        <div className="col-span-1 flex items-center">
-                          <Badge className={getPriorityColor(assignment.priority)} variant="secondary">
-                            {assignment.priority.charAt(0).toUpperCase() + assignment.priority.slice(1)}
-                          </Badge>
-                        </div>
-
-                        <div className="col-span-2 flex items-center">
-                          <div className={`flex items-center gap-2 ${getStatusColor(assignment.status)}`}>
-                            {getStatusIcon(assignment.status)}
-                            <span className="text-sm">
-                              {assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="col-span-1 flex items-center">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => toggleStatus(assignment.id)}>
-                                Toggle Status
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => deleteAssignment(assignment.id)}
-                                className="text-destructive"
-                              >
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="subject">Subject</Label>
+                      <Select value={formData.subjectId} onValueChange={(value) => setFormData({ ...formData, subjectId: value })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select subject" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {subjects.map((subject) => (
+                            <SelectItem key={subject.id} value={subject.id}>
+                              {subject.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                    <div className="space-y-2">
+                      <Label htmlFor="dueDate">Due Date</Label>
+                      <Input
+                        id="dueDate"
+                        type="date"
+                        value={formData.dueDate}
+                        onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="points">Points</Label>
+                      <Input
+                        id="points"
+                        type="number"
+                        min="1"
+                        value={formData.points}
+                        onChange={(e) => setFormData({ ...formData, points: parseInt(e.target.value) || 0 })}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="difficulty">Difficulty</Label>
+                      <Select value={formData.difficulty} onValueChange={(value) => setFormData({ ...formData, difficulty: value as 'Easy' | 'Medium' | 'Hard' })}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Easy">Easy</SelectItem>
+                          <SelectItem value="Medium">Medium</SelectItem>
+                          <SelectItem value="Hard">Hard</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">Create Assignment</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
-    </div>
-  )
-}
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Input
+            placeholder="Search assignments..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+          <SelectTrigger className="w-full sm:w-40">
+            <SelectValue placeholder="All Subjects" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Subjects</SelectItem>
+            {subjects.map((subject) => (
+              <SelectItem key={subject.id} value={subject.id}>
+                {subject.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
+          <SelectTrigger className="w-full sm:w-40">
+            <SelectValue placeholder="All Difficulties" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Difficulties</SelectItem>
+            <SelectItem value="Easy">Easy</SelectItem>
+            <SelectItem value="Medium">Medium</SelectItem>
+            <SelectItem value="Hard">Hard</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+          

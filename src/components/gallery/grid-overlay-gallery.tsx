@@ -1,214 +1,476 @@
 "use client";
-import { ArrowRight, Star, Users, Code, ExternalLink } from "lucide-react";
 
+import { useState, useEffect } from "react";
+import { Search, Filter, ExternalLink, Github, Calendar, Clock, Plus, Eye, Heart, Star, Code, Layers, Smartphone, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
-type ProjectMetric = {
-  icon: string;
-  value: string;
-  label: string;
-};
-
-interface ProjectData {
+interface Project {
+  id: string;
   title: string;
   description: string;
-  category: string;
-  link: string;
-  githubLink: string;
-  background: string;
   techStack: string[];
-  metrics: Array<ProjectMetric>;
+  difficulty: "beginner" | "intermediate" | "advanced";
+  category: "web" | "mobile" | "ai-ml" | "backend" | "frontend" | "fullstack";
+  githubUrl?: string;
+  demoUrl?: string;
+  imageUrl?: string;
+  status: "active" | "completed" | "archived";
+  createdAt: string;
+  updatedAt: string;
+  views?: number;
+  likes?: number;
+  instructorId?: string;
 }
 
-// Featured Engineering Projects
-const PROJECTS: Array<ProjectData> = [
-  {
-    title: "E-Commerce Platform",
-    description: "Full-stack web application with payment integration and real-time inventory management",
-    category: "Web Applications",
-    link: "https://example-ecommerce.com",
-    githubLink: "https://github.com/student/ecommerce-platform",
-    background: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1000&auto=format&fit=crop",
-    techStack: ["React", "Node.js", "MongoDB"],
-    metrics: [
-      { icon: "⭐", value: "234", label: "stars" },
-      { icon: "👥", value: "12", label: "contributors" },
-      { icon: "🔧", value: "React", label: "primary tech" }
-    ]
-  },
-  {
-    title: "Smart Health Monitor",
-    description: "Cross-platform mobile app for tracking health metrics with AI-powered insights",
-    category: "Mobile Apps",
-    link: "https://example-health-app.com",
-    githubLink: "https://github.com/student/health-monitor",
-    background: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?q=80&w=1000&auto=format&fit=crop",
-    techStack: ["React Native", "TensorFlow", "Firebase"],
-    metrics: [
-      { icon: "⭐", value: "189", label: "stars" },
-      { icon: "📱", value: "5K", label: "downloads" },
-      { icon: "🔧", value: "React Native", label: "primary tech" }
-    ]
-  },
-  {
-    title: "ML Stock Predictor",
-    description: "Machine learning model for stock price prediction using LSTM networks and sentiment analysis",
-    category: "Machine Learning Projects",
-    link: "https://example-ml-stock.com",
-    githubLink: "https://github.com/student/stock-predictor",
-    background: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1000&auto=format&fit=crop",
-    techStack: ["Python", "TensorFlow", "Pandas"],
-    metrics: [
-      { icon: "⭐", value: "456", label: "stars" },
-      { icon: "🎯", value: "87%", label: "accuracy" },
-      { icon: "🔧", value: "Python", label: "primary tech" }
-    ]
-  },
-  {
-    title: "Distributed Chat System",
-    description: "Scalable real-time messaging system with microservices architecture and load balancing",
-    category: "System Design Projects",
-    link: "https://example-chat-system.com",
-    githubLink: "https://github.com/student/distributed-chat",
-    background: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?q=80&w=1000&auto=format&fit=crop",
-    techStack: ["Go", "Redis", "Docker"],
-    metrics: [
-      { icon: "⭐", value: "312", label: "stars" },
-      { icon: "⚡", value: "1M+", label: "messages/day" },
-      { icon: "🔧", value: "Go", label: "primary tech" }
-    ]
-  },
-  {
-    title: "Open Source UI Library",
-    description: "Comprehensive React component library with accessibility features and TypeScript support",
-    category: "Open Source Contributions",
-    link: "https://example-ui-lib.com",
-    githubLink: "https://github.com/opensource/ui-library",
-    background: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1000&auto=format&fit=crop",
-    techStack: ["TypeScript", "React", "Storybook"],
-    metrics: [
-      { icon: "⭐", value: "1.2K", label: "stars" },
-      { icon: "👥", value: "45", label: "contributors" },
-      { icon: "🔧", value: "TypeScript", label: "primary tech" }
-    ]
-  },
-  {
-    title: "IoT Smart Home Hub",
-    description: "Centralized control system for smart home devices with voice commands and automation",
-    category: "System Design Projects",
-    link: "https://example-smart-home.com",
-    githubLink: "https://github.com/student/smart-home-hub",
-    background: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?q=80&w=1000&auto=format&fit=crop",
-    techStack: ["Raspberry Pi", "Python", "MQTT"],
-    metrics: [
-      { icon: "⭐", value: "178", label: "stars" },
-      { icon: "🏠", value: "50+", label: "devices supported" },
-      { icon: "🔧", value: "Python", label: "primary tech" }
-    ]
-  }
-];
+const categoryIcons = {
+  web: Code,
+  mobile: Smartphone,
+  "ai-ml": Brain,
+  backend: Layers,
+  frontend: Eye,
+  fullstack: Code,
+};
 
-const ProjectCard = ({ title, description, category, link, githubLink, background, techStack, metrics }: ProjectData) => {
-  return (
-    <div
-      style={{ backgroundImage: `url(${background})` }}
-      className="before:content-[] relative min-h-auto w-full overflow-hidden rounded-[.5rem] bg-black/80 bg-cover bg-center bg-no-repeat p-5 transition-all duration-300 before:absolute before:top-0 before:left-0 before:z-10 before:block before:size-full before:bg-black/50 before:transition-all before:duration-300 hover:before:bg-black/30 sm:aspect-square md:aspect-auto md:min-h-[30rem] md:max-w-[30rem] group"
-    >
-      <div className="relative z-20 flex size-full flex-col justify-between gap-4">
-        {/* Category Badge */}
-        <div className="flex justify-between items-start">
-          <span className="px-3 py-1 bg-primary/80 backdrop-blur-sm text-white text-xs rounded-full font-medium">
-            {category}
-          </span>
-          <div className="flex gap-2">
-            <a
-              href={githubLink}
-              className="p-2 bg-white/10 backdrop-blur-sm rounded-full text-white hover:bg-white/20 transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Code className="size-4" />
-            </a>
-            <a
-              href={link}
-              className="p-2 bg-white/10 backdrop-blur-sm rounded-full text-white hover:bg-white/20 transition-colors"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <ExternalLink className="size-4" />
-            </a>
+const difficultyColors = {
+  beginner: "bg-green-100 text-green-800 border-green-200",
+  intermediate: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  advanced: "bg-red-100 text-red-800 border-red-200",
+};
+
+export const ProjectsGallery = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>("all");
+  const [selectedTech, setSelectedTech] = useState<string>("all");
+  const [showAddProject, setShowAddProject] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
+  // New project form state
+  const [newProject, setNewProject] = useState({
+    title: "",
+    description: "",
+    techStack: "",
+    difficulty: "beginner" as const,
+    category: "web" as const,
+    githubUrl: "",
+    demoUrl: "",
+    imageUrl: "",
+  });
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  useEffect(() => {
+    filterProjects();
+  }, [projects, searchQuery, selectedCategory, selectedDifficulty, selectedTech]);
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/projects");
+      if (!response.ok) {
+        throw new Error("Failed to fetch projects");
+      }
+      const data = await response.json();
+      setProjects(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filterProjects = () => {
+    let filtered = projects;
+
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (project) =>
+          project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          project.techStack.some((tech) =>
+            tech.toLowerCase().includes(searchQuery.toLowerCase())
+          )
+      );
+    }
+
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter((project) => project.category === selectedCategory);
+    }
+
+    if (selectedDifficulty !== "all") {
+      filtered = filtered.filter((project) => project.difficulty === selectedDifficulty);
+    }
+
+    if (selectedTech !== "all") {
+      filtered = filtered.filter((project) =>
+        project.techStack.some((tech) =>
+          tech.toLowerCase().includes(selectedTech.toLowerCase())
+        )
+      );
+    }
+
+    setFilteredProjects(filtered);
+  };
+
+  const handleAddProject = async () => {
+    try {
+      const projectData = {
+        ...newProject,
+        techStack: newProject.techStack.split(",").map((tech) => tech.trim()),
+        status: "active" as const,
+      };
+
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(projectData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create project");
+      }
+
+      await fetchProjects();
+      setShowAddProject(false);
+      setNewProject({
+        title: "",
+        description: "",
+        techStack: "",
+        difficulty: "beginner",
+        category: "web",
+        githubUrl: "",
+        demoUrl: "",
+        imageUrl: "",
+      });
+    } catch (err) {
+      console.error("Error creating project:", err);
+    }
+  };
+
+  const allTechStacks = Array.from(
+    new Set(projects.flatMap((project) => project.techStack))
+  );
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8 space-y-4">
+          <Skeleton className="h-12 w-64" />
+          <div className="flex gap-4">
+            <Skeleton className="h-10 w-80" />
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
           </div>
         </div>
-
-        {/* Project Metrics */}
-        <div className="flex gap-3 flex-wrap">
-          {metrics.map((metric, index) => (
-            <div key={index} className="flex items-center gap-1 bg-white/10 backdrop-blur-sm px-2 py-1 rounded-md">
-              <span className="text-sm">{metric.icon}</span>
-              <span className="text-white text-sm font-medium">{metric.value}</span>
-              <span className="text-white/70 text-xs">{metric.label}</span>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Card key={i} className="overflow-hidden">
+              <Skeleton className="h-48 w-full" />
+              <CardContent className="p-4 space-y-3">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-6 w-20" />
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
-
-        {/* Project Info */}
-        <div className="flex w-full flex-col gap-6">
-          <div className="flex flex-col gap-3">
-            <h3 className="text-2xl leading-[1.2] font-semibold text-white md:text-3xl">
-              {title}
-            </h3>
-            <p className="text-sm text-white/80 leading-relaxed line-clamp-3">
-              {description}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {techStack.map((tech, index) => (
-                <span key={index} className="px-2 py-1 bg-white/20 backdrop-blur-sm text-white text-xs rounded-md">
-                  {tech}
-                </span>
-              ))}
-            </div>
-          </div>
-          <Button 
-            variant="secondary" 
-            size="default" 
-            className="w-fit bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 hover:text-white group-hover:bg-white/20"
-            asChild
-          >
-            <a href={link} target="_blank" rel="noopener noreferrer">
-              View Project
-              <ArrowRight className="size-4 ml-2" />
-            </a>
-          </Button>
-        </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
 
-const GridOverlayGallery = () => {
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card className="max-w-md mx-auto">
+          <CardContent className="pt-6 text-center">
+            <p className="text-destructive mb-4">{error}</p>
+            <Button onClick={fetchProjects}>Try Again</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <section className="py-32 bg-background">
-      <div className="container mx-auto">
-        <div className="flex flex-col gap-12">
-          <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-4xl font-bold text-foreground mb-4">
-              Featured Engineering Projects
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Explore innovative student and professional projects showcasing cutting-edge technologies, 
-              creative problem-solving, and real-world applications across various engineering disciplines.
+    <div className="container mx-auto px-4 py-8">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">Projects Gallery</h1>
+            <p className="text-muted-foreground">
+              Discover and explore coding projects across different technologies and difficulty levels
             </p>
           </div>
+          <Dialog open={showAddProject} onOpenChange={setShowAddProject}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Add Project
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Add New Project</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="title">Title</Label>
+                  <Input
+                    id="title"
+                    value={newProject.title}
+                    onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
+                    placeholder="Project title"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={newProject.description}
+                    onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                    placeholder="Project description"
+                    rows={3}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="category">Category</Label>
+                    <Select
+                      value={newProject.category}
+                      onValueChange={(value: any) => setNewProject({ ...newProject, category: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="web">Web</SelectItem>
+                        <SelectItem value="mobile">Mobile</SelectItem>
+                        <SelectItem value="ai-ml">AI/ML</SelectItem>
+                        <SelectItem value="backend">Backend</SelectItem>
+                        <SelectItem value="frontend">Frontend</SelectItem>
+                        <SelectItem value="fullstack">Fullstack</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="difficulty">Difficulty</Label>
+                    <Select
+                      value={newProject.difficulty}
+                      onValueChange={(value: any) => setNewProject({ ...newProject, difficulty: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="beginner">Beginner</SelectItem>
+                        <SelectItem value="intermediate">Intermediate</SelectItem>
+                        <SelectItem value="advanced">Advanced</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="techStack">Tech Stack (comma-separated)</Label>
+                  <Input
+                    id="techStack"
+                    value={newProject.techStack}
+                    onChange={(e) => setNewProject({ ...newProject, techStack: e.target.value })}
+                    placeholder="React, TypeScript, Node.js"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="githubUrl">GitHub URL</Label>
+                    <Input
+                      id="githubUrl"
+                      value={newProject.githubUrl}
+                      onChange={(e) => setNewProject({ ...newProject, githubUrl: e.target.value })}
+                      placeholder="https://github.com/..."
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="demoUrl">Demo URL</Label>
+                    <Input
+                      id="demoUrl"
+                      value={newProject.demoUrl}
+                      onChange={(e) => setNewProject({ ...newProject, demoUrl: e.target.value })}
+                      placeholder="https://demo.example.com"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="imageUrl">Image URL</Label>
+                  <Input
+                    id="imageUrl"
+                    value={newProject.imageUrl}
+                    onChange={(e) => setNewProject({ ...newProject, imageUrl: e.target.value })}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setShowAddProject(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddProject}>Add Project</Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
 
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {PROJECTS.map((project, i) => (
-              <ProjectCard key={`project-${i}`} {...project} />
-            ))}
+        {/* Filters */}
+        <div className="flex flex-wrap gap-4 items-center">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search projects..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
           </div>
+          
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-40">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="web">Web</SelectItem>
+              <SelectItem value="mobile">Mobile</SelectItem>
+              <SelectItem value="ai-ml">AI/ML</SelectItem>
+              <SelectItem value="backend">Backend</SelectItem>
+              <SelectItem value="frontend">Frontend</SelectItem>
+              <SelectItem value="fullstack">Fullstack</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Difficulty" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Levels</SelectItem>
+              <SelectItem value="beginner">Beginner</SelectItem>
+              <SelectItem value="intermediate">Intermediate</SelectItem>
+              <SelectItem value="advanced">Advanced</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedTech} onValueChange={setSelectedTech}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Technology" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Tech</SelectItem>
+              {allTechStacks.map((tech) => (
+                <SelectItem key={tech} value={tech}>{tech}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
-    </section>
-  );
-};
 
-export { GridOverlayGallery };
+      {/* Projects Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {filteredProjects.map((project) => {
+          const CategoryIcon = categoryIcons[project.category];
+          return (
+            <Card 
+              key={project.id} 
+              className="group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
+              onClick={() => setSelectedProject(project)}
+            >
+              <div className="relative">
+                {project.imageUrl ? (
+                  <img
+                    src={project.imageUrl}
+                    alt={project.title}
+                    className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="w-full h-48 bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+                    <CategoryIcon className="h-16 w-16 text-primary/40" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="flex gap-2">
+                    {project.githubUrl && (
+                      <Button size="sm" variant="secondary" className="h-8 w-8 p-0">
+                        <Github className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {project.demoUrl && (
+                      <Button size="sm" variant="secondary" className="h-8 w-8 p-0">
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <Badge className={`text-xs ${difficultyColors[project.difficulty]}`}>
+                    {project.difficulty}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    <CategoryIcon className="h-3 w-3 mr-1" />
+                    {project.category}
+                  </Badge>
+                </div>
+                <CardTitle className="text-lg line-clamp-1">{project.title}</CardTitle>
+              </CardHeader>
+              
+              <CardContent className="pt-0">
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                  {project.description}
+                </p>
+                
+                <div className="flex flex-wrap gap-1 mb-4">
+                  {project.techStack.slice(0, 3).map((tech) => (
+                    <Badge key={tech} variant="secondary" className="text-xs">
+                      {tech}
+                    </Badge>
+                  ))}
+                  {project.techStack.length > 3 && (
+                    <Badge variant="outline" className="text-xs">
+                      +{project.techStack.length - 3}
+                    </Badge>
+                  )}
+                </div>
+                
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(project.createdAt).toLocaleDateString()}
+                    </div>
+                    {project.views && (
+                      <div className="flex items-center gap-1">
+                        <Eye className="h-3 w-3" />
+                        {project.views

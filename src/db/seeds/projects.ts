@@ -1,0 +1,145 @@
+import { db } from '@/db';
+import { projects } from '@/db/schema';
+
+async function main() {
+    const sampleProjects = [
+        {
+            title: 'E-commerce Platform',
+            description: 'A full-stack e-commerce solution featuring product listings, shopping cart, user authentication, and order processing. Designed for scalability and modern web standards.',
+            techStack: ['React', 'Node.js', 'MongoDB', 'Express'],
+            difficulty: 'medium',
+            githubUrl: 'https://github.com/example/ecommerce-platform',
+            demoUrl: 'https://demo.ecommerce.com',
+            category: 'web-development',
+            createdAt: new Date('2024-03-01T10:00:00Z').toISOString(),
+        },
+        {
+            title: 'Social Media Dashboard',
+            description: 'An interactive dashboard for managing social media accounts, scheduling posts, and analyzing engagement metrics. Built with a focus on fast data fetching and responsive design.',
+            techStack: ['Next.js', 'TypeScript', 'Tailwind CSS', 'PostgreSQL'],
+            difficulty: 'easy',
+            githubUrl: 'https://github.com/example/social-dashboard',
+            demoUrl: 'https://dashboard.socialize.app',
+            category: 'web-development',
+            createdAt: new Date('2024-03-05T11:30:00Z').toISOString(),
+        },
+        {
+            title: 'Real-time Chat Application',
+            description: 'A real-time chat application with features like private messaging, group chats, online status, and message notifications. Utilizes websockets for instant communication.',
+            techStack: ['Socket.io', 'React', 'Node.js', 'Redis'],
+            difficulty: 'medium',
+            githubUrl: 'https://github.com/example/realtime-chat-app',
+            demoUrl: 'https://chat.liveconnect.io',
+            category: 'web-development',
+            createdAt: new Date('2024-03-10T09:15:00Z').toISOString(),
+        },
+        {
+            title: 'Task Management System',
+            description: 'A comprehensive task management system to organize projects, assign tasks, set deadlines, and track progress. Includes user roles, project boards, and notifications.',
+            techStack: ['Vue.js', 'Django', 'PostgreSQL', 'Docker'],
+            difficulty: 'hard',
+            githubUrl: 'https://github.com/example/task-manager',
+            demoUrl: 'https://tasks.projectflow.com',
+            category: 'web-development',
+            createdAt: new Date('2024-03-15T14:45:00Z').toISOString(),
+        },
+        {
+            title: 'Fitness Tracking App',
+            description: 'A mobile application for tracking workouts, monitoring fitness goals, and visualizing progress. Integrates with health APIs for accurate data collection.',
+            techStack: ['React Native', 'Firebase', 'TypeScript'],
+            difficulty: 'medium',
+            githubUrl: 'https://github.com/example/fitness-tracker',
+            demoUrl: 'https://apps.apple.com/us/app/fitness-tracker',
+            category: 'mobile',
+            createdAt: new Date('2024-03-20T16:00:00Z').toISOString(),
+        },
+        {
+            title: 'Recipe Sharing App',
+            description: 'A community-driven mobile app where users can share their favorite recipes, browse by category, and save personalized recipe collections.',
+            techStack: ['Flutter', 'Dart', 'SQLite'],
+            difficulty: 'easy',
+            githubUrl: 'https://github.com/example/recipe-sharing',
+            demoUrl: 'https://play.google.com/store/apps/details?id=recipe.app',
+            category: 'mobile',
+            createdAt: new Date('2024-03-25T08:30:00Z').toISOString(),
+        },
+        {
+            title: 'Stock Price Predictor',
+            description: 'An AI-powered application that predicts future stock prices using historical data and machine learning algorithms. Provides data visualization and forecasting.',
+            techStack: ['Python', 'TensorFlow', 'Pandas', 'Jupyter'],
+            difficulty: 'hard',
+            githubUrl: 'https://github.com/example/stock-predictor',
+            demoUrl: 'https://stockpredict.ai',
+            category: 'data-science',
+            createdAt: new Date('2024-04-01T10:00:00Z').toISOString(),
+        },
+        {
+            title: 'Customer Churn Prediction',
+            description: 'A data science project to identify customers at risk of churning using classification algorithms and customer behavior data.',
+            techStack: ['Python', 'Scikit-learn', 'SQL', 'Matplotlib'],
+            difficulty: 'medium',
+            githubUrl: 'https://github.com/example/customer-churn',
+            demoUrl: '',
+            category: 'data-science',
+            createdAt: new Date('2024-04-05T12:00:00Z').toISOString(),
+        },
+        {
+            title: 'Image Classification with CNN',
+            description: 'A deep learning project implementing Convolutional Neural Networks for image classification tasks, trained on a large dataset of diverse images.',
+            techStack: ['Python', 'Keras', 'TensorFlow', 'OpenCV'],
+            difficulty: 'hard',
+            githubUrl: 'https://github.com/example/image-classification',
+            demoUrl: '',
+            category: 'data-science',
+            createdAt: new Date('2024-04-10T14:00:00Z').toISOString(),
+        },
+        {
+            title: 'Voice Assistant with NLP',
+            description: 'Develop a custom voice assistant capable of understanding natural language commands and performing various tasks like setting reminders, playing music, or fetching information.',
+            techStack: ['Python', 'NLTK', 'SpeechRecognition', 'Flask'],
+            difficulty: 'hard',
+            githubUrl: 'https://github.com/example/voice-assistant',
+            demoUrl: '',
+            category: 'ai-ml',
+            createdAt: new Date('2024-04-15T16:30:00Z').toISOString(),
+        },
+        {
+            title: 'House Price Prediction (Regression)',
+            description: 'Implement a machine learning model to predict house prices based on various features like location, size, and amenities using regression algorithms.',
+            techStack: ['Python', 'Pandas', 'Scikit-learn', 'Jupyter'],
+            difficulty: 'easy',
+            githubUrl: 'https://github.com/example/house-price-prediction',
+            demoUrl: '',
+            category: 'ai-ml',
+            createdAt: new Date('2024-04-20T09:00:00Z').toISOString(),
+        },
+        {
+            title: 'Automated CI/CD Pipeline for Web App',
+            description: 'Set up a robust CI/CD pipeline using GitHub Actions to automate testing and deployment of a web application to a cloud provider like AWS S3/CloudFront.',
+            techStack: ['GitHub Actions', 'AWS S3', 'AWS CloudFront', 'Docker'],
+            difficulty: 'medium',
+            githubUrl: 'https://github.com/example/ci-cd-pipeline',
+            demoUrl: '',
+            category: 'devops',
+            createdAt: new Date('2024-04-25T11:45:00Z').toISOString(),
+        },
+        {
+            title: 'Kubernetes Cluster Provisioning',
+            description: 'Automate the provisioning and management of a Kubernetes cluster using Infrastructure as Code (IaC) tools like Terraform on a cloud platform.',
+            techStack: ['Terraform', 'Kubernetes', 'AWS EKS', 'Bash'],
+            difficulty: 'hard',
+            githubUrl: 'https://github.com/example/kubernetes-iac',
+            demoUrl: '',
+            category: 'devops',
+            createdAt: new Date('2024-04-30T10:15:00Z').toISOString(),
+        },
+    ];
+
+    await db.insert(projects).values(sampleProjects);
+
+    console.log('✅ Projects seeder completed successfully');
+}
+
+main().catch((error) => {
+    console.error('❌ Seeder failed:', error);
+});
