@@ -1,0 +1,218 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+@import "tailwindcss";
+@import "tw-animate-css";
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
+
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
+
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0f172a;
+
+  --color-primary: #1e40af;
+  --color-primary-foreground: #ffffff;
+
+  --color-secondary: #f1f5f9;
+  --color-secondary-foreground: #475569;
+
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+
+  --color-accent: #0ea5e9;
+  --color-accent-foreground: #ffffff;
+
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+  --color-ring: #1e40af;
+
+  --color-chart-1: #1e40af;
+  --color-chart-2: #10b981;
+  --color-chart-3: #0ea5e9;
+  --color-chart-4: #f59e0b;
+  --color-chart-5: #ef4444;
+
+  --color-sidebar: #ffffff;
+  --color-sidebar-foreground: #475569;
+  --color-sidebar-primary: #1e40af;
+  --color-sidebar-primary-foreground: #ffffff;
+  --color-sidebar-accent: #f1f5f9;
+  --color-sidebar-accent-foreground: #475569;
+  --color-sidebar-border: #e2e8f0;
+  --color-sidebar-ring: #1e40af;
+
+  --color-primary-light: #3b82f6;
+  --color-surface: #ffffff;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+
+  --font-display: "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: #e2e8f0;
+  }
+}
+
+@layer base {
+  :root {
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+    --popover: #ffffff;
+    --popover-foreground: #0f172a;
+    --primary: #1e40af;
+    --primary-foreground: #ffffff;
+    --secondary: #f1f5f9;
+    --secondary-foreground: #475569;
+    --muted: #f1f5f9;
+    --muted-foreground: #64748b;
+    --accent: #0ea5e9;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #e2e8f0;
+    --input: #e2e8f0;
+    --ring: #1e40af;
+    --chart-1: #1e40af;
+    --chart-2: #10b981;
+    --chart-3: #0ea5e9;
+    --chart-4: #f59e0b;
+    --chart-5: #ef4444;
+    --radius: 0.5rem;
+    --sidebar-background: #ffffff;
+    --sidebar-foreground: #475569;
+    --sidebar-primary: #1e40af;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #f1f5f9;
+    --sidebar-accent-foreground: #475569;
+    --sidebar-border: #e2e8f0;
+    --sidebar-ring: #1e40af;
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--color-foreground);
+  }
+
+  h1 {
+    font-size: 3rem;
+    font-weight: 800;
+  }
+
+  h2 {
+    font-size: 2.25rem;
+    font-weight: 700;
+  }
+
+  h3 {
+    font-size: 1.875rem;
+    font-weight: 600;
+  }
+
+  h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  h5 {
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+
+  h6 {
+    font-size: 1.125rem;
+    font-weight: 500;
+  }
+
+  p {
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  code, pre {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-body {
+    font-family: var(--font-body);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  .container {
+    margin-inline: auto;
+    padding-inline: 2rem;
+    max-width: 1200px;
+  }
+}
