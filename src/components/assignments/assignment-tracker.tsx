@@ -477,4 +477,18 @@ export const AssignmentTracker = () => {
           </SelectContent>
         </Select>
         <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-          
+          <SelectTrigger className="w-full sm:w-40">
+            <SelectValue placeholder="All Statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="Not Started">Not Started</SelectItem>
+            <SelectItem value="In Progress">In Progress</SelectItem>
+            <SelectItem value="Completed">Completed</SelectItem>
+            <SelectItem value="Overdue">Overdue</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+};
