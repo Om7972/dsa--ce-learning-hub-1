@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
     // Single record fetch
     if (id) {
       if (isNaN(parseInt(id))) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Valid ID is required",
-          code: "INVALID_ID" 
+          code: "INVALID_ID"
         }, { status: 400 });
       }
 
@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
         .limit(1);
 
       if (problem.length === 0) {
-        return NextResponse.json({ 
-          error: 'Problem not found' 
+        return NextResponse.json({
+          error: 'Problem not found'
         }, { status: 404 });
       }
 
@@ -40,19 +40,19 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'createdAt';
     const order = searchParams.get('order') || 'desc';
 
-    let query = db.select().from(problems);
-    
+    let query: any = db.select().from(problems);
+
     // Build where conditions
     const conditions = [];
-    
+
     if (search) {
       conditions.push(like(problems.title, `%${search}%`));
     }
-    
+
     if (difficulty) {
       conditions.push(eq(problems.difficulty, difficulty));
     }
-    
+
     if (category) {
       conditions.push(eq(problems.category, category));
     }
@@ -62,15 +62,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Apply sorting
-    const sortColumn = sort === 'title' ? problems.title : 
-                      sort === 'difficulty' ? problems.difficulty :
-                      sort === 'category' ? problems.category :
-                      problems.createdAt;
+    const sortColumn = sort === 'title' ? problems.title :
+      sort === 'difficulty' ? problems.difficulty :
+        sort === 'category' ? problems.category :
+          problems.createdAt;
 
     if (order === 'asc') {
-      query = query.orderBy(asc(sortColumn));
+      query = query.orderBy(asc(sortColumn as any));
     } else {
-      query = query.orderBy(desc(sortColumn));
+      query = query.orderBy(desc(sortColumn as any));
     }
 
     const results = await query.limit(limit).offset(offset);
@@ -78,8 +78,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(results);
   } catch (error) {
     console.error('GET error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }
@@ -90,38 +90,38 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!body.title || typeof body.title !== 'string' || !body.title.trim()) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Title is required and must be a non-empty string",
-        code: "MISSING_TITLE" 
+        code: "MISSING_TITLE"
       }, { status: 400 });
     }
 
     if (!body.description || typeof body.description !== 'string' || !body.description.trim()) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Description is required and must be a non-empty string",
-        code: "MISSING_DESCRIPTION" 
+        code: "MISSING_DESCRIPTION"
       }, { status: 400 });
     }
 
     if (!body.difficulty || typeof body.difficulty !== 'string' || !body.difficulty.trim()) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Difficulty is required and must be a non-empty string",
-        code: "MISSING_DIFFICULTY" 
+        code: "MISSING_DIFFICULTY"
       }, { status: 400 });
     }
 
     if (!body.category || typeof body.category !== 'string' || !body.category.trim()) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Category is required and must be a non-empty string",
-        code: "MISSING_CATEGORY" 
+        code: "MISSING_CATEGORY"
       }, { status: 400 });
     }
 
     // Validate testCases if provided
     if (body.testCases && !Array.isArray(body.testCases)) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Test cases must be an array",
-        code: "INVALID_TEST_CASES" 
+        code: "INVALID_TEST_CASES"
       }, { status: 400 });
     }
 
@@ -143,8 +143,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newProblem[0], { status: 201 });
   } catch (error) {
     console.error('POST error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }
@@ -155,9 +155,9 @@ export async function PUT(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id || isNaN(parseInt(id))) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Valid ID is required",
-        code: "INVALID_ID" 
+        code: "INVALID_ID"
       }, { status: 400 });
     }
 
@@ -168,8 +168,8 @@ export async function PUT(request: NextRequest) {
       .limit(1);
 
     if (existingProblem.length === 0) {
-      return NextResponse.json({ 
-        error: 'Problem not found' 
+      return NextResponse.json({
+        error: 'Problem not found'
       }, { status: 404 });
     }
 
@@ -179,9 +179,9 @@ export async function PUT(request: NextRequest) {
     // Validate and sanitize fields if provided
     if (body.title !== undefined) {
       if (!body.title || typeof body.title !== 'string' || !body.title.trim()) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Title must be a non-empty string",
-          code: "INVALID_TITLE" 
+          code: "INVALID_TITLE"
         }, { status: 400 });
       }
       updates.title = body.title.trim();
@@ -189,9 +189,9 @@ export async function PUT(request: NextRequest) {
 
     if (body.description !== undefined) {
       if (!body.description || typeof body.description !== 'string' || !body.description.trim()) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Description must be a non-empty string",
-          code: "INVALID_DESCRIPTION" 
+          code: "INVALID_DESCRIPTION"
         }, { status: 400 });
       }
       updates.description = body.description.trim();
@@ -199,9 +199,9 @@ export async function PUT(request: NextRequest) {
 
     if (body.difficulty !== undefined) {
       if (!body.difficulty || typeof body.difficulty !== 'string' || !body.difficulty.trim()) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Difficulty must be a non-empty string",
-          code: "INVALID_DIFFICULTY" 
+          code: "INVALID_DIFFICULTY"
         }, { status: 400 });
       }
       updates.difficulty = body.difficulty.trim();
@@ -209,9 +209,9 @@ export async function PUT(request: NextRequest) {
 
     if (body.category !== undefined) {
       if (!body.category || typeof body.category !== 'string' || !body.category.trim()) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Category must be a non-empty string",
-          code: "INVALID_CATEGORY" 
+          code: "INVALID_CATEGORY"
         }, { status: 400 });
       }
       updates.category = body.category.trim();
@@ -223,9 +223,9 @@ export async function PUT(request: NextRequest) {
 
     if (body.testCases !== undefined) {
       if (!Array.isArray(body.testCases)) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Test cases must be an array",
-          code: "INVALID_TEST_CASES" 
+          code: "INVALID_TEST_CASES"
         }, { status: 400 });
       }
       updates.testCases = body.testCases;
@@ -239,8 +239,8 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(updatedProblem[0]);
   } catch (error) {
     console.error('PUT error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }
@@ -251,9 +251,9 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id || isNaN(parseInt(id))) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Valid ID is required",
-        code: "INVALID_ID" 
+        code: "INVALID_ID"
       }, { status: 400 });
     }
 
@@ -264,8 +264,8 @@ export async function DELETE(request: NextRequest) {
       .limit(1);
 
     if (existingProblem.length === 0) {
-      return NextResponse.json({ 
-        error: 'Problem not found' 
+      return NextResponse.json({
+        error: 'Problem not found'
       }, { status: 404 });
     }
 
@@ -279,8 +279,8 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error) {
     console.error('DELETE error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }

@@ -351,7 +351,7 @@ export const ProjectsGallery = () => {
               className="pl-10"
             />
           </div>
-          
+
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-40">
               <Filter className="h-4 w-4 mr-2" />
@@ -399,8 +399,8 @@ export const ProjectsGallery = () => {
         {filteredProjects.map((project) => {
           const CategoryIcon = categoryIcons[project.category];
           return (
-            <Card 
-              key={project.id} 
+            <Card
+              key={project.id}
               className="group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
               onClick={() => setSelectedProject(project)}
             >
@@ -432,7 +432,7 @@ export const ProjectsGallery = () => {
                   </div>
                 </div>
               </div>
-              
+
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between mb-2">
                   <Badge className={`text-xs ${difficultyColors[project.difficulty]}`}>
@@ -445,12 +445,12 @@ export const ProjectsGallery = () => {
                 </div>
                 <CardTitle className="text-lg line-clamp-1">{project.title}</CardTitle>
               </CardHeader>
-              
+
               <CardContent className="pt-0">
                 <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                   {project.description}
                 </p>
-                
+
                 <div className="flex flex-wrap gap-1 mb-4">
                   {project.techStack.slice(0, 3).map((tech) => (
                     <Badge key={tech} variant="secondary" className="text-xs">
@@ -463,7 +463,7 @@ export const ProjectsGallery = () => {
                     </Badge>
                   )}
                 </div>
-                
+
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1">
@@ -473,4 +473,22 @@ export const ProjectsGallery = () => {
                     {project.views && (
                       <div className="flex items-center gap-1">
                         <Eye className="h-3 w-3" />
-                        {project.views
+                        {project.views}
+                      </div>
+                    )}
+                    {project.likes && (
+                      <div className="flex items-center gap-1">
+                        <Heart className="h-3 w-3" />
+                        {project.likes}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+};

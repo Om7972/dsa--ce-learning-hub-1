@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
     // Single record fetch
     if (id) {
       if (!id || isNaN(parseInt(id))) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Valid ID is required",
-          code: "INVALID_ID" 
+          code: "INVALID_ID"
         }, { status: 400 });
       }
 
@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
         .limit(1);
 
       if (record.length === 0) {
-        return NextResponse.json({ 
-          error: 'Career path not found' 
+        return NextResponse.json({
+          error: 'Career path not found'
         }, { status: 404 });
       }
 
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'createdAt';
     const order = searchParams.get('order') || 'desc';
 
-    let query = db.select().from(careerPaths);
+    let query: any = db.select().from(careerPaths);
 
     // Apply search filter
     if (search) {
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
 
     // Apply sorting
     const sortField = sort === 'title' ? careerPaths.title : careerPaths.createdAt;
-    query = query.orderBy(order === 'asc' ? asc(sortField) : desc(sortField));
+    query = query.orderBy(order === 'asc' ? asc(sortField as any) : desc(sortField as any));
 
     // Apply pagination
     const results = await query.limit(limit).offset(offset);
@@ -60,8 +60,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(results);
   } catch (error) {
     console.error('GET error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }
@@ -72,23 +72,23 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!body.title || typeof body.title !== 'string' || !body.title.trim()) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Title is required and must be a non-empty string",
-        code: "MISSING_TITLE" 
+        code: "MISSING_TITLE"
       }, { status: 400 });
     }
 
     if (!body.description || typeof body.description !== 'string' || !body.description.trim()) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Description is required and must be a non-empty string",
-        code: "MISSING_DESCRIPTION" 
+        code: "MISSING_DESCRIPTION"
       }, { status: 400 });
     }
 
     if (!body.salaryRange || typeof body.salaryRange !== 'string' || !body.salaryRange.trim()) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Salary range is required and must be a non-empty string",
-        code: "MISSING_SALARY_RANGE" 
+        code: "MISSING_SALARY_RANGE"
       }, { status: 400 });
     }
 
@@ -98,9 +98,9 @@ export async function POST(request: NextRequest) {
 
     if (body.requirements) {
       if (!Array.isArray(body.requirements)) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Requirements must be an array",
-          code: "INVALID_REQUIREMENTS" 
+          code: "INVALID_REQUIREMENTS"
         }, { status: 400 });
       }
       requirements = body.requirements;
@@ -108,9 +108,9 @@ export async function POST(request: NextRequest) {
 
     if (body.skillsNeeded) {
       if (!Array.isArray(body.skillsNeeded)) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Skills needed must be an array",
-          code: "INVALID_SKILLS_NEEDED" 
+          code: "INVALID_SKILLS_NEEDED"
         }, { status: 400 });
       }
       skillsNeeded = body.skillsNeeded;
@@ -131,8 +131,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newCareerPath[0], { status: 201 });
   } catch (error) {
     console.error('POST error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }
@@ -143,9 +143,9 @@ export async function PUT(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id || isNaN(parseInt(id))) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Valid ID is required",
-        code: "INVALID_ID" 
+        code: "INVALID_ID"
       }, { status: 400 });
     }
 
@@ -156,8 +156,8 @@ export async function PUT(request: NextRequest) {
       .limit(1);
 
     if (existing.length === 0) {
-      return NextResponse.json({ 
-        error: 'Career path not found' 
+      return NextResponse.json({
+        error: 'Career path not found'
       }, { status: 404 });
     }
 
@@ -167,9 +167,9 @@ export async function PUT(request: NextRequest) {
     // Validate and set fields if provided
     if (body.title !== undefined) {
       if (typeof body.title !== 'string' || !body.title.trim()) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Title must be a non-empty string",
-          code: "INVALID_TITLE" 
+          code: "INVALID_TITLE"
         }, { status: 400 });
       }
       updates.title = body.title.trim();
@@ -177,9 +177,9 @@ export async function PUT(request: NextRequest) {
 
     if (body.description !== undefined) {
       if (typeof body.description !== 'string' || !body.description.trim()) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Description must be a non-empty string",
-          code: "INVALID_DESCRIPTION" 
+          code: "INVALID_DESCRIPTION"
         }, { status: 400 });
       }
       updates.description = body.description.trim();
@@ -187,9 +187,9 @@ export async function PUT(request: NextRequest) {
 
     if (body.salaryRange !== undefined) {
       if (typeof body.salaryRange !== 'string' || !body.salaryRange.trim()) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Salary range must be a non-empty string",
-          code: "INVALID_SALARY_RANGE" 
+          code: "INVALID_SALARY_RANGE"
         }, { status: 400 });
       }
       updates.salaryRange = body.salaryRange.trim();
@@ -197,9 +197,9 @@ export async function PUT(request: NextRequest) {
 
     if (body.requirements !== undefined) {
       if (!Array.isArray(body.requirements)) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Requirements must be an array",
-          code: "INVALID_REQUIREMENTS" 
+          code: "INVALID_REQUIREMENTS"
         }, { status: 400 });
       }
       updates.requirements = body.requirements;
@@ -207,9 +207,9 @@ export async function PUT(request: NextRequest) {
 
     if (body.skillsNeeded !== undefined) {
       if (!Array.isArray(body.skillsNeeded)) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Skills needed must be an array",
-          code: "INVALID_SKILLS_NEEDED" 
+          code: "INVALID_SKILLS_NEEDED"
         }, { status: 400 });
       }
       updates.skillsNeeded = body.skillsNeeded;
@@ -226,8 +226,8 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(updated[0]);
   } catch (error) {
     console.error('PUT error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }
@@ -238,9 +238,9 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id || isNaN(parseInt(id))) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Valid ID is required",
-        code: "INVALID_ID" 
+        code: "INVALID_ID"
       }, { status: 400 });
     }
 
@@ -251,8 +251,8 @@ export async function DELETE(request: NextRequest) {
       .limit(1);
 
     if (existing.length === 0) {
-      return NextResponse.json({ 
-        error: 'Career path not found' 
+      return NextResponse.json({
+        error: 'Career path not found'
       }, { status: 404 });
     }
 
@@ -266,8 +266,8 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error) {
     console.error('DELETE error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }

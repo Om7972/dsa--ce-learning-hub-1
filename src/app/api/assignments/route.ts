@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
     // Single assignment by ID
     if (id) {
       if (!id || isNaN(parseInt(id))) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Valid ID is required",
-          code: "INVALID_ID" 
+          code: "INVALID_ID"
         }, { status: 400 });
       }
 
@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
         .limit(1);
 
       if (assignment.length === 0) {
-        return NextResponse.json({ 
-          error: 'Assignment not found' 
+        return NextResponse.json({
+          error: 'Assignment not found'
         }, { status: 404 });
       }
 
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'createdAt';
     const order = searchParams.get('order') || 'desc';
 
-    let query = db.select().from(assignments);
+    let query: any = db.select().from(assignments);
 
     // Build where conditions
     const conditions = [];
@@ -64,9 +64,9 @@ export async function GET(request: NextRequest) {
     // Add sorting
     const sortColumn = assignments[sort as keyof typeof assignments] || assignments.createdAt;
     if (order === 'asc') {
-      query = query.orderBy(asc(sortColumn));
+      query = query.orderBy(asc(sortColumn as any));
     } else {
-      query = query.orderBy(desc(sortColumn));
+      query = query.orderBy(desc(sortColumn as any));
     }
 
     const results = await query.limit(limit).offset(offset);
@@ -75,8 +75,8 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('GET error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }
@@ -87,45 +87,45 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!body.subjectId) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Subject ID is required",
-        code: "MISSING_SUBJECT_ID" 
+        code: "MISSING_SUBJECT_ID"
       }, { status: 400 });
     }
 
     if (!body.title || typeof body.title !== 'string' || !body.title.trim()) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Title is required",
-        code: "MISSING_TITLE" 
+        code: "MISSING_TITLE"
       }, { status: 400 });
     }
 
     if (!body.difficulty || typeof body.difficulty !== 'string' || !body.difficulty.trim()) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Difficulty is required",
-        code: "MISSING_DIFFICULTY" 
+        code: "MISSING_DIFFICULTY"
       }, { status: 400 });
     }
 
     if (!body.dueDate || typeof body.dueDate !== 'string' || !body.dueDate.trim()) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Due date is required",
-        code: "MISSING_DUE_DATE" 
+        code: "MISSING_DUE_DATE"
       }, { status: 400 });
     }
 
     if (body.points === undefined || body.points === null || isNaN(parseInt(body.points))) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Points is required and must be a number",
-        code: "MISSING_POINTS" 
+        code: "MISSING_POINTS"
       }, { status: 400 });
     }
 
     // Validate subjectId is a valid integer
     if (isNaN(parseInt(body.subjectId))) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Subject ID must be a valid number",
-        code: "INVALID_SUBJECT_ID" 
+        code: "INVALID_SUBJECT_ID"
       }, { status: 400 });
     }
 
@@ -136,9 +136,9 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (subject.length === 0) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Referenced subject does not exist",
-        code: "SUBJECT_NOT_FOUND" 
+        code: "SUBJECT_NOT_FOUND"
       }, { status: 400 });
     }
 
@@ -161,8 +161,8 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('POST error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }
@@ -173,9 +173,9 @@ export async function PUT(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id || isNaN(parseInt(id))) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Valid ID is required",
-        code: "INVALID_ID" 
+        code: "INVALID_ID"
       }, { status: 400 });
     }
 
@@ -186,8 +186,8 @@ export async function PUT(request: NextRequest) {
       .limit(1);
 
     if (existingAssignment.length === 0) {
-      return NextResponse.json({ 
-        error: 'Assignment not found' 
+      return NextResponse.json({
+        error: 'Assignment not found'
       }, { status: 404 });
     }
 
@@ -197,9 +197,9 @@ export async function PUT(request: NextRequest) {
     // Validate and sanitize fields if provided
     if (body.subjectId !== undefined) {
       if (isNaN(parseInt(body.subjectId))) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Subject ID must be a valid number",
-          code: "INVALID_SUBJECT_ID" 
+          code: "INVALID_SUBJECT_ID"
         }, { status: 400 });
       }
 
@@ -210,9 +210,9 @@ export async function PUT(request: NextRequest) {
         .limit(1);
 
       if (subject.length === 0) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Referenced subject does not exist",
-          code: "SUBJECT_NOT_FOUND" 
+          code: "SUBJECT_NOT_FOUND"
         }, { status: 400 });
       }
 
@@ -221,9 +221,9 @@ export async function PUT(request: NextRequest) {
 
     if (body.title !== undefined) {
       if (!body.title || typeof body.title !== 'string' || !body.title.trim()) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Title cannot be empty",
-          code: "INVALID_TITLE" 
+          code: "INVALID_TITLE"
         }, { status: 400 });
       }
       updates.title = body.title.trim();
@@ -235,9 +235,9 @@ export async function PUT(request: NextRequest) {
 
     if (body.difficulty !== undefined) {
       if (!body.difficulty || typeof body.difficulty !== 'string' || !body.difficulty.trim()) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Difficulty cannot be empty",
-          code: "INVALID_DIFFICULTY" 
+          code: "INVALID_DIFFICULTY"
         }, { status: 400 });
       }
       updates.difficulty = body.difficulty.trim();
@@ -245,9 +245,9 @@ export async function PUT(request: NextRequest) {
 
     if (body.dueDate !== undefined) {
       if (!body.dueDate || typeof body.dueDate !== 'string' || !body.dueDate.trim()) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Due date cannot be empty",
-          code: "INVALID_DUE_DATE" 
+          code: "INVALID_DUE_DATE"
         }, { status: 400 });
       }
       updates.dueDate = body.dueDate.trim();
@@ -255,9 +255,9 @@ export async function PUT(request: NextRequest) {
 
     if (body.points !== undefined) {
       if (isNaN(parseInt(body.points))) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Points must be a valid number",
-          code: "INVALID_POINTS" 
+          code: "INVALID_POINTS"
         }, { status: 400 });
       }
       updates.points = parseInt(body.points);
@@ -272,8 +272,8 @@ export async function PUT(request: NextRequest) {
 
   } catch (error) {
     console.error('PUT error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }
@@ -284,9 +284,9 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id || isNaN(parseInt(id))) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Valid ID is required",
-        code: "INVALID_ID" 
+        code: "INVALID_ID"
       }, { status: 400 });
     }
 
@@ -297,8 +297,8 @@ export async function DELETE(request: NextRequest) {
       .limit(1);
 
     if (existingAssignment.length === 0) {
-      return NextResponse.json({ 
-        error: 'Assignment not found' 
+      return NextResponse.json({
+        error: 'Assignment not found'
       }, { status: 404 });
     }
 
@@ -313,8 +313,8 @@ export async function DELETE(request: NextRequest) {
 
   } catch (error) {
     console.error('DELETE error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }

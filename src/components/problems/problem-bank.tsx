@@ -12,7 +12,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Label } from "@/components/ui/label";
 import { Search, Filter, Code, CheckCircle, XCircle, Clock, Play, History, Tag, Users } from "lucide-react";
+import React from 'react';
 
 interface Problem {
   id: string;
@@ -71,13 +73,13 @@ export const ProblemBank = () => {
   const [problemStatuses, setProblemStatuses] = useState<Map<string, ProblemStatus>>(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Filters and search
   const [searchTerm, setSearchTerm] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  
+
   // Selected problem and submission
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
   const [userCode, setUserCode] = useState("");
@@ -110,7 +112,7 @@ export const ProblemBank = () => {
           const problemSubmissions = submissionsData.filter(
             (sub: UserSubmission) => sub.problemId === problem.id
           );
-          
+
           let status: "solved" | "attempted" | "unsolved" = "unsolved";
           if (problemSubmissions.some((sub: UserSubmission) => sub.status === "accepted")) {
             status = "solved";
@@ -145,16 +147,16 @@ export const ProblemBank = () => {
   // Filter problems
   const filteredProblems = useMemo(() => {
     return problems.filter(problem => {
-      const matchesSearch = 
+      const matchesSearch =
         problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         problem.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         problem.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-      
+
       const matchesDifficulty = difficultyFilter === "all" || problem.difficulty === difficultyFilter;
       const matchesCategory = categoryFilter === "all" || problem.category === categoryFilter;
-      
+
       const problemStatus = problemStatuses.get(problem.id);
-      const matchesStatus = statusFilter === "all" || 
+      const matchesStatus = statusFilter === "all" ||
         (statusFilter === "solved" && problemStatus?.status === "solved") ||
         (statusFilter === "attempted" && problemStatus?.status === "attempted") ||
         (statusFilter === "unsolved" && problemStatus?.status === "unsolved");
@@ -168,7 +170,7 @@ export const ProblemBank = () => {
 
     try {
       setSubmissionStatus("submitting");
-      
+
       const response = await fetch("/api/submit-code", {
         method: "POST",
         headers: {
@@ -187,17 +189,17 @@ export const ProblemBank = () => {
 
       const result = await response.json();
       setSubmissionStatus("submitted");
-      
+
       // Refresh submissions
       const submissionsRes = await fetch("/api/user-submissions");
       const submissionsData = await submissionsRes.json();
       setUserSubmissions(submissionsData);
-      
+
       // Update problem status
       const problemSubmissions = submissionsData.filter(
         (sub: UserSubmission) => sub.problemId === selectedProblem.id
       );
-      
+
       let status: "solved" | "attempted" | "unsolved" = "unsolved";
       if (problemSubmissions.some((sub: UserSubmission) => sub.status === "accepted")) {
         status = "solved";
@@ -283,7 +285,7 @@ export const ProblemBank = () => {
               className="pl-10"
             />
           </div>
-          
+
           <div className="flex gap-2">
             <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
               <SelectTrigger className="w-32">
@@ -347,8 +349,8 @@ export const ProblemBank = () => {
                           {problem.title}
                         </CardTitle>
                       </div>
-                      <Badge 
-                        variant="outline" 
+                      <Badge
+                        variant="outline"
                         className={difficultyConfig[problem.difficulty].color}
                       >
                         {difficultyConfig[problem.difficulty].label}
@@ -393,8 +395,8 @@ export const ProblemBank = () => {
                     <div className="flex items-center gap-3">
                       {getStatusIcon(problem.id)}
                       <DialogTitle className="text-xl">{problem.title}</DialogTitle>
-                      <Badge 
-                        variant="outline" 
+                      <Badge
+                        variant="outline"
                         className={difficultyConfig[problem.difficulty].color}
                       >
                         {difficultyConfig[problem.difficulty].label}
@@ -403,5 +405,129 @@ export const ProblemBank = () => {
                   </div>
                 </DialogHeader>
 
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-                  <TabsList className
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+                  <div className="border-b px-6">
+                    <TabsList className="w-full justify-start">
+                      <TabsTrigger value="description">Description</TabsTrigger>
+                      <TabsTrigger value="solution">Solution</TabsTrigger>
+                      <TabsTrigger value="submissions">Submissions</TabsTrigger>
+                    </TabsList>
+                  </div>
+
+                  <div className="flex-1 overflow-hidden">
+                    <TabsContent value="description" className="h-full p-0 m-0">
+                      <ScrollArea className="h-full">
+                        <div className="p-6 space-y-6">
+                          <div className="prose dark:prose-invert max-w-none">
+                            <h3 className="text-lg font-semibold mb-2">Problem Statement</h3>
+                            <p className="text-muted-foreground whitespace-pre-wrap">{problem.description}</p>
+                          </div>
+
+                          {problem.examples.map((example, index) => (
+                            <div key={index} className="space-y-2">
+                              <h4 className="font-semibold text-sm">Example {index + 1}:</h4>
+                              <div className="bg-muted p-4 rounded-lg space-y-2 text-sm font-mono">
+                                <div>
+                                  <span className="text-muted-foreground">Input:</span> {example.input}
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Output:</span> {example.output}
+                                </div>
+                                {example.explanation && (
+                                  <div>
+                                    <span className="text-muted-foreground">Explanation:</span> {example.explanation}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+
+                          <div className="space-y-2">
+                            <h4 className="font-semibold text-sm">Constraints:</h4>
+                            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                              {problem.constraints.map((constraint, index) => (
+                                <li key={index}>{constraint}</li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          <div className="pt-4 border-t">
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between">
+                                <Label>Your Solution (JavaScript)</Label>
+                                <Button
+                                  onClick={handleSubmitCode}
+                                  disabled={submissionStatus === "submitting" || !userCode.trim()}
+                                >
+                                  {submissionStatus === "submitting" ? (
+                                    <>
+                                      <Clock className="w-4 h-4 mr-2 animate-spin" />
+                                      Submitting...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Play className="w-4 h-4 mr-2" />
+                                      Run Code
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                              <Textarea
+                                value={userCode}
+                                onChange={(e) => setUserCode(e.target.value)}
+                                className="font-mono min-h-[300px]"
+                                placeholder="// Write your solution here..."
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </ScrollArea>
+                    </TabsContent>
+
+                    <TabsContent value="solution" className="h-full p-6 m-0 overflow-auto">
+                      <Alert>
+                        <AlertTitle>Solution Template</AlertTitle>
+                        <AlertDescription>
+                          <pre className="mt-2 p-4 bg-muted rounded-md overflow-x-auto text-sm">
+                            {problem.solutionTemplate || "// No template available"}
+                          </pre>
+                        </AlertDescription>
+                      </Alert>
+                    </TabsContent>
+
+                    <TabsContent value="submissions" className="h-full p-6 m-0 overflow-auto">
+                      <div className="space-y-4">
+                        <h3 className="font-semibold">Your Submissions</h3>
+                        {problemStatuses.get(problem.id)?.submissions.length === 0 ? (
+                          <p className="text-muted-foreground text-sm">No submissions yet.</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {problemStatuses.get(problem.id)?.submissions.map((sub) => (
+                              <div key={sub.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                <div className="flex items-center gap-2">
+                                  {statusConfig[sub.status] && React.createElement(statusConfig[sub.status].icon, {
+                                    className: `w-4 h-4 ${statusConfig[sub.status].color}`
+                                  })}
+                                  <span className={statusConfig[sub.status]?.color || ""}>
+                                    {statusConfig[sub.status]?.label || sub.status}
+                                  </span>
+                                </div>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(sub.submittedAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </TabsContent>
+                  </div>
+                </Tabs>
+              </DialogContent>
+            </Dialog>
+          );
+        })}
+      </div>
+    </div>
+  );
+};

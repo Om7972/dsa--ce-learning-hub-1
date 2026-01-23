@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ScheduleForm, ScheduleFormData } from "./schedule-form";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -76,7 +77,7 @@ export const StudyTimetableDashboard = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const [schedulesRes, subjectsRes, progressRes] = await Promise.all([
         fetch('/api/study-schedules'),
         fetch('/api/subjects'),
@@ -123,7 +124,7 @@ export const StudyTimetableDashboard = () => {
     const day = startOfWeek.getDay();
     const diff = startOfWeek.getDate() - day;
     startOfWeek.setDate(diff);
-    
+
     const weekSchedules = [];
     for (let i = 0; i < 7; i++) {
       const date = new Date(startOfWeek);
@@ -143,31 +144,22 @@ export const StudyTimetableDashboard = () => {
     const completedSessions = progress.reduce((sum, p) => sum + p.completed_sessions, 0);
     const maxStreak = Math.max(...progress.map(p => p.streak_days), 0);
     const upcomingSessions = schedules.filter(s => !s.is_completed && new Date(s.date) >= new Date()).length;
-    
+
     return { totalHours, completedSessions, maxStreak, upcomingSessions };
   };
 
-  const handleCreateSchedule = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateSchedule = async (data: ScheduleFormData) => {
     try {
       const response = await fetch('/api/study-schedules', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(data)
       });
 
       if (!response.ok) throw new Error('Failed to create schedule');
 
       await fetchData();
       setIsCreateModalOpen(false);
-      setFormData({
-        subject_id: "",
-        title: "",
-        description: "",
-        date: new Date().toISOString().split('T')[0],
-        start_time: "",
-        end_time: ""
-      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create schedule');
     }
@@ -190,9 +182,14 @@ export const StudyTimetableDashboard = () => {
     }
   };
 
+  const handleEditSubmit = async (data: ScheduleFormData) => {
+    if (!editingSchedule) return;
+    await handleUpdateSchedule(editingSchedule.id, data);
+  };
+
   const handleDeleteSchedule = async (id: string) => {
     if (!confirm('Are you sure you want to delete this schedule?')) return;
-    
+
     try {
       const response = await fetch(`/api/study-schedules/${id}`, {
         method: 'DELETE'
@@ -306,80 +303,12 @@ export const StudyTimetableDashboard = () => {
                   Schedule a new study session for your subjects
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleCreateSchedule} className="space-y-4">
-                <div>
-                  <Label htmlFor="subject">Subject</Label>
-                  <Select value={formData.subject_id} onValueChange={(value) => setFormData(prev => ({ ...prev, subject_id: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a subject" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {subjects.map(subject => (
-                        <SelectItem key={subject.id} value={subject.id}>
-                          {subject.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="Study session title"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Input
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Optional description"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="date">Date</Label>
-                  <Input
-                    id="date"
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="start_time">Start Time</Label>
-                    <Input
-                      id="start_time"
-                      type="time"
-                      value={formData.start_time}
-                      onChange={(e) => setFormData(prev => ({ ...prev, start_time: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="end_time">End Time</Label>
-                    <Input
-                      id="end_time"
-                      type="time"
-                      value={formData.end_time}
-                      onChange={(e) => setFormData(prev => ({ ...prev, end_time: e.target.value }))}
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit">Create Session</Button>
-                </div>
-              </form>
+              <ScheduleForm
+                subjects={subjects}
+                onSubmit={handleCreateSchedule}
+                onCancel={() => setIsCreateModalOpen(false)}
+                submitLabel="Create Session"
+              />
             </DialogContent>
           </Dialog>
         </div>
@@ -476,11 +405,10 @@ export const StudyTimetableDashboard = () => {
                         return (
                           <div
                             key={schedule.id}
-                            className={`p-4 rounded-lg border-l-4 transition-all duration-200 hover:shadow-md ${
-                              schedule.is_completed 
-                                ? 'bg-green-50 border-l-green-500 opacity-75' 
+                            className={`p-4 rounded-lg border-l-4 transition-all duration-200 hover:shadow-md ${schedule.is_completed
+                                ? 'bg-green-50 border-l-green-500 opacity-75'
                                 : 'bg-card border-l-primary'
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex-1">
@@ -499,4 +427,131 @@ export const StudyTimetableDashboard = () => {
                                     </Badge>
                                   )}
                                 </div>
-                                <div className="flex items-center space-x-4 text-sm text-mute
+                                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                                  <span>{schedule.start_time} - {schedule.end_time}</span>
+                                  <div className="flex items-center space-x-1">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingSchedule(schedule)}>
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteSchedule(schedule.id)}>
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {getWeekSchedules().map((daySchedule, index) => (
+                    <div key={index} className="space-y-2">
+                      <h4 className="font-medium flex items-center">
+                        <span className="w-16 text-muted-foreground">{daySchedule.day}</span>
+                        <span className="text-sm border-b flex-1 ml-2"></span>
+                      </h4>
+                      {daySchedule.schedules.length === 0 ? (
+                        <p className="text-sm text-muted-foreground ml-20">No sessions</p>
+                      ) : (
+                        <div className="ml-20 space-y-2">
+                          {daySchedule.schedules.map(schedule => {
+                            const subject = getSubjectById(schedule.subject_id);
+                            return (
+                              <div key={schedule.id} className="flex items-center justify-between p-3 rounded-md bg-muted/50 border border-transparent hover:border-border transition-colors">
+                                <div className="flex items-center space-x-3">
+                                  <div
+                                    className={`h-2 w-2 rounded-full ${schedule.is_completed ? 'bg-green-500' : 'bg-primary'}`}
+                                    style={{ backgroundColor: schedule.is_completed ? undefined : subject?.color }}
+                                  />
+                                  <span className={schedule.is_completed ? 'line-through text-muted-foreground' : ''}>
+                                    {schedule.title}
+                                  </span>
+                                  {subject && (
+                                    <Badge variant="outline" style={{ borderColor: subject.color, color: subject.color }}>
+                                      {subject.name}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center space-x-3">
+                                  <span className="text-sm text-muted-foreground">
+                                    {schedule.start_time} - {schedule.end_time}
+                                  </span>
+                                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingSchedule(schedule)}>
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Subjects List Side Panel */}
+        <div className="lg:col-span-1">
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle>Subjects</CardTitle>
+              <CardDescription>Your registered courses</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {subjects.map(subject => (
+                  <div key={subject.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center space-x-3">
+                      <div className="h-4 w-4 rounded-full" style={{ backgroundColor: subject.color }} />
+                      <div className="font-medium">{subject.name}</div>
+                    </div>
+                    <Badge variant="secondary">{schedules.filter(s => s.subject_id === subject.id && !s.is_completed).length} tasks</Badge>
+                  </div>
+                ))}
+                <Button variant="outline" className="w-full">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Manage Subjects
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingSchedule} onOpenChange={(open) => !open && setEditingSchedule(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Session</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            {editingSchedule && (
+              <ScheduleForm
+                subjects={subjects}
+                initialData={{
+                  subject_id: editingSchedule.subject_id,
+                  title: editingSchedule.title,
+                  description: editingSchedule.description || "",
+                  date: editingSchedule.date,
+                  start_time: editingSchedule.start_time,
+                  end_time: editingSchedule.end_time
+                }}
+                onSubmit={handleEditSubmit}
+                onCancel={() => setEditingSchedule(null)}
+                submitLabel="Update Session"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
