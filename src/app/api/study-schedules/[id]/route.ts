@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin as supabase } from '@/lib/supabase';
 
 // Helper helper for type safety if needed, but for now simple param access
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {

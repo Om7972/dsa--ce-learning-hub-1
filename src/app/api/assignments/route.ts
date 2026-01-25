@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { assignments, subjects } from '@/db/schema';
-import { eq, like, and, or, desc, asc } from 'drizzle-orm';
+import { eq, like, and, or, desc, asc, SQL } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     let query: any = db.select().from(assignments);
 
     // Build where conditions
-    const conditions = [];
+    const conditions: SQL[] = [];
 
     if (search) {
       conditions.push(like(assignments.title, `%${search}%`));

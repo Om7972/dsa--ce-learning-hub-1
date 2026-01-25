@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { userSubmissions, users, problems } from '@/db/schema';
-import { eq, like, and, or, desc, asc } from 'drizzle-orm';
+import { eq, like, and, or, desc, asc, SQL } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
     // Single record fetch
     if (id) {
       if (!id || isNaN(parseInt(id))) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Valid ID is required",
-          code: "INVALID_ID" 
+          code: "INVALID_ID"
         }, { status: 400 });
       }
 
@@ -39,18 +39,17 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'submittedAt';
     const order = searchParams.get('order') || 'desc';
 
-    let query = db.select().from(userSubmissions);
+    let query: any = db.select().from(userSubmissions);
 
     // Build where conditions
-    const conditions = [];
-    
+    const conditions: SQL[] = [];
+
     if (search) {
-      conditions.push(
-        or(
-          like(userSubmissions.code, `%${search}%`),
-          like(userSubmissions.status, `%${search}%`)
-        )
-      );
+      const titleSearch = like(userSubmissions.code, `%${search}%`);
+      const statusSearch = like(userSubmissions.status, `%${search}%`);
+      if (titleSearch && statusSearch) {
+        conditions.push(or(titleSearch, statusSearch)!);
+      }
     }
 
     if (userId && !isNaN(parseInt(userId))) {
@@ -70,7 +69,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Apply sorting
-    const sortColumn = userSubmissions[sort as keyof typeof userSubmissions] || userSubmissions.submittedAt;
+    const sortColumn = (userSubmissions[sort as keyof typeof userSubmissions] || userSubmissions.submittedAt) as any;
     query = query.orderBy(order === 'asc' ? asc(sortColumn) : desc(sortColumn));
 
     // Apply pagination
@@ -79,8 +78,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(results);
   } catch (error) {
     console.error('GET error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }
@@ -92,38 +91,38 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!userId) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "userId is required",
-        code: "MISSING_REQUIRED_FIELD" 
+        code: "MISSING_REQUIRED_FIELD"
       }, { status: 400 });
     }
 
     if (!problemId) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "problemId is required",
-        code: "MISSING_REQUIRED_FIELD" 
+        code: "MISSING_REQUIRED_FIELD"
       }, { status: 400 });
     }
 
     if (!code || typeof code !== 'string') {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "code is required and must be a string",
-        code: "MISSING_REQUIRED_FIELD" 
+        code: "MISSING_REQUIRED_FIELD"
       }, { status: 400 });
     }
 
     // Validate IDs are valid integers
     if (isNaN(parseInt(userId))) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "userId must be a valid integer",
-        code: "INVALID_ID" 
+        code: "INVALID_ID"
       }, { status: 400 });
     }
 
     if (isNaN(parseInt(problemId))) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "problemId must be a valid integer",
-        code: "INVALID_ID" 
+        code: "INVALID_ID"
       }, { status: 400 });
     }
 
@@ -134,9 +133,9 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (userExists.length === 0) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Referenced user does not exist",
-        code: "INVALID_FOREIGN_KEY" 
+        code: "INVALID_FOREIGN_KEY"
       }, { status: 400 });
     }
 
@@ -147,9 +146,9 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (problemExists.length === 0) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Referenced problem does not exist",
-        code: "INVALID_FOREIGN_KEY" 
+        code: "INVALID_FOREIGN_KEY"
       }, { status: 400 });
     }
 
@@ -171,8 +170,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newRecord[0], { status: 201 });
   } catch (error) {
     console.error('POST error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }
@@ -183,9 +182,9 @@ export async function PUT(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id || isNaN(parseInt(id))) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Valid ID is required",
-        code: "INVALID_ID" 
+        code: "INVALID_ID"
       }, { status: 400 });
     }
 
@@ -206,9 +205,9 @@ export async function PUT(request: NextRequest) {
     // Validate and prepare updates
     if (userId !== undefined) {
       if (isNaN(parseInt(userId))) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "userId must be a valid integer",
-          code: "INVALID_ID" 
+          code: "INVALID_ID"
         }, { status: 400 });
       }
 
@@ -219,9 +218,9 @@ export async function PUT(request: NextRequest) {
         .limit(1);
 
       if (userExists.length === 0) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Referenced user does not exist",
-          code: "INVALID_FOREIGN_KEY" 
+          code: "INVALID_FOREIGN_KEY"
         }, { status: 400 });
       }
 
@@ -230,9 +229,9 @@ export async function PUT(request: NextRequest) {
 
     if (problemId !== undefined) {
       if (isNaN(parseInt(problemId))) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "problemId must be a valid integer",
-          code: "INVALID_ID" 
+          code: "INVALID_ID"
         }, { status: 400 });
       }
 
@@ -243,9 +242,9 @@ export async function PUT(request: NextRequest) {
         .limit(1);
 
       if (problemExists.length === 0) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Referenced problem does not exist",
-          code: "INVALID_FOREIGN_KEY" 
+          code: "INVALID_FOREIGN_KEY"
         }, { status: 400 });
       }
 
@@ -254,9 +253,9 @@ export async function PUT(request: NextRequest) {
 
     if (code !== undefined) {
       if (typeof code !== 'string') {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "code must be a string",
-          code: "INVALID_FIELD_TYPE" 
+          code: "INVALID_FIELD_TYPE"
         }, { status: 400 });
       }
       updates.code = code.trim();
@@ -264,9 +263,9 @@ export async function PUT(request: NextRequest) {
 
     if (status !== undefined) {
       if (typeof status !== 'string') {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "status must be a string",
-          code: "INVALID_FIELD_TYPE" 
+          code: "INVALID_FIELD_TYPE"
         }, { status: 400 });
       }
       updates.status = status.trim();
@@ -281,8 +280,8 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(updated[0]);
   } catch (error) {
     console.error('PUT error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }
@@ -293,9 +292,9 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id || isNaN(parseInt(id))) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Valid ID is required",
-        code: "INVALID_ID" 
+        code: "INVALID_ID"
       }, { status: 400 });
     }
 
@@ -320,8 +319,8 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error) {
     console.error('DELETE error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }

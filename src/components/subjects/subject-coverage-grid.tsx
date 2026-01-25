@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +8,12 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { 
-  Search, 
-  BookOpen, 
-  Clock, 
-  CheckCircle, 
-  Circle, 
+import {
+  Search,
+  BookOpen,
+  Clock,
+  CheckCircle,
+  Circle,
   Play,
   Filter,
   Users,
@@ -145,7 +145,7 @@ export const SubjectCoverageGrid = () => {
   const updateTopicProgress = async (topicId: string, status: 'not_started' | 'in_progress' | 'completed') => {
     try {
       setUpdatingProgress(topicId);
-      
+
       const response = await fetch('/api/user-progress', {
         method: 'PUT',
         headers: {
@@ -171,7 +171,7 @@ export const SubjectCoverageGrid = () => {
 
   const filteredSubjects = subjects.filter(subject => {
     const matchesSearch = subject.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         subject.description.toLowerCase().includes(searchTerm.toLowerCase());
+      subject.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "all" || subject.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -275,10 +275,10 @@ export const SubjectCoverageGrid = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredSubjects.map((subject) => {
           const CategoryIcon = categoryIcons[subject.category];
-          
+
           return (
-            <Card 
-              key={subject.id} 
+            <Card
+              key={subject.id}
               className="hover:shadow-lg transition-all duration-300 cursor-pointer group"
               onClick={() => openSubjectDialog(subject)}
             >
@@ -298,7 +298,7 @@ export const SubjectCoverageGrid = () => {
                   {subject.description}
                 </p>
               </CardHeader>
-              
+
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-4">
@@ -323,8 +323,8 @@ export const SubjectCoverageGrid = () => {
                       {subject.completedTopics}/{subject.totalTopics} completed
                     </span>
                   </div>
-                  <Progress 
-                    value={subject.completionPercentage} 
+                  <Progress
+                    value={subject.completionPercentage}
                     className="h-2"
                   />
                   <div className="text-right text-xs text-muted-foreground">
@@ -332,8 +332,8 @@ export const SubjectCoverageGrid = () => {
                   </div>
                 </div>
 
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   variant="outline"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -354,8 +354,8 @@ export const SubjectCoverageGrid = () => {
           <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium mb-2">No subjects found</h3>
           <p className="text-muted-foreground">
-            {searchTerm || selectedCategory !== "all" 
-              ? "Try adjusting your search or filters" 
+            {searchTerm || selectedCategory !== "all"
+              ? "Try adjusting your search or filters"
               : "No subjects available"}
           </p>
         </div>
@@ -374,7 +374,7 @@ export const SubjectCoverageGrid = () => {
               )}
             </DialogTitle>
           </DialogHeader>
-          
+
           {selectedSubject && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -405,7 +405,7 @@ export const SubjectCoverageGrid = () => {
                   const topicProgress = selectedSubject.progress.find(p => p.topic_id === topic.id);
                   const status = topicProgress?.status || 'not_started';
                   const isUpdating = updatingProgress === topic.id;
-                  
+
                   return (
                     <Card key={topic.id} className="p-4">
                       <div className="flex items-start justify-between">
@@ -415,8 +415,8 @@ export const SubjectCoverageGrid = () => {
                               {index + 1}.
                             </span>
                             <h5 className="font-medium">{topic.title}</h5>
-                            <Badge 
-                              variant="outline" 
+                            <Badge
+                              variant="outline"
                               className={difficultyColors[topic.difficulty]}
                             >
                               {topic.difficulty}
@@ -438,7 +438,7 @@ export const SubjectCoverageGrid = () => {
                             )}
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-2 ml-4">
                           {status === 'completed' && (
                             <CheckCircle className="w-5 h-5 text-green-500" />
@@ -449,7 +449,7 @@ export const SubjectCoverageGrid = () => {
                           {status === 'not_started' && (
                             <Circle className="w-5 h-5 text-muted-foreground" />
                           )}
-                          
+
                           <div className="flex gap-1">
                             {status === 'not_started' && (
                               <Button

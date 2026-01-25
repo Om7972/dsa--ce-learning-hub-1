@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { users } from '@/db/schema';
-import { eq, like, or, desc, asc } from 'drizzle-orm';
+import { eq, like, or, desc, asc, SQL } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
     // Single user fetch by ID
     if (id) {
       if (isNaN(parseInt(id))) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Valid ID is required",
-          code: "INVALID_ID" 
+          code: "INVALID_ID"
         }, { status: 400 });
       }
 
@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
         .limit(1);
 
       if (user.length === 0) {
-        return NextResponse.json({ 
-          error: 'User not found' 
+        return NextResponse.json({
+          error: 'User not found'
         }, { status: 404 });
       }
 
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'createdAt';
     const order = searchParams.get('order') || 'desc';
 
-    let query = db.select().from(users);
+    let query: any = db.select().from(users);
 
     // Apply search filter
     if (search) {
@@ -66,8 +66,8 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('GET error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }
@@ -75,26 +75,26 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // Validate required fields
     if (!body.email) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Email is required",
-        code: "MISSING_EMAIL" 
+        code: "MISSING_EMAIL"
       }, { status: 400 });
     }
 
     if (!body.name) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Name is required",
-        code: "MISSING_NAME" 
+        code: "MISSING_NAME"
       }, { status: 400 });
     }
 
     if (!body.passwordHash) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Password hash is required",
-        code: "MISSING_PASSWORD_HASH" 
+        code: "MISSING_PASSWORD_HASH"
       }, { status: 400 });
     }
 
@@ -111,9 +111,9 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (existingUser.length > 0) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Email already exists",
-        code: "EMAIL_EXISTS" 
+        code: "EMAIL_EXISTS"
       }, { status: 400 });
     }
 
@@ -133,8 +133,8 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('POST error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }
@@ -145,9 +145,9 @@ export async function PUT(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id || isNaN(parseInt(id))) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Valid ID is required",
-        code: "INVALID_ID" 
+        code: "INVALID_ID"
       }, { status: 400 });
     }
 
@@ -158,8 +158,8 @@ export async function PUT(request: NextRequest) {
       .limit(1);
 
     if (existingUser.length === 0) {
-      return NextResponse.json({ 
-        error: 'User not found' 
+      return NextResponse.json({
+        error: 'User not found'
       }, { status: 404 });
     }
 
@@ -171,14 +171,14 @@ export async function PUT(request: NextRequest) {
     // Validate and sanitize fields if provided
     if (body.email !== undefined) {
       if (!body.email.trim()) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Email cannot be empty",
-          code: "INVALID_EMAIL" 
+          code: "INVALID_EMAIL"
         }, { status: 400 });
       }
 
       const email = body.email.trim().toLowerCase();
-      
+
       // Check if email is unique (excluding current user)
       const emailExists = await db.select()
         .from(users)
@@ -186,9 +186,9 @@ export async function PUT(request: NextRequest) {
         .limit(1);
 
       if (emailExists.length > 0 && emailExists[0].id !== parseInt(id)) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Email already exists",
-          code: "EMAIL_EXISTS" 
+          code: "EMAIL_EXISTS"
         }, { status: 400 });
       }
 
@@ -197,9 +197,9 @@ export async function PUT(request: NextRequest) {
 
     if (body.name !== undefined) {
       if (!body.name.trim()) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Name cannot be empty",
-          code: "INVALID_NAME" 
+          code: "INVALID_NAME"
         }, { status: 400 });
       }
       updates.name = body.name.trim();
@@ -207,9 +207,9 @@ export async function PUT(request: NextRequest) {
 
     if (body.passwordHash !== undefined) {
       if (!body.passwordHash.trim()) {
-        return NextResponse.json({ 
+        return NextResponse.json({
           error: "Password hash cannot be empty",
-          code: "INVALID_PASSWORD_HASH" 
+          code: "INVALID_PASSWORD_HASH"
         }, { status: 400 });
       }
       updates.passwordHash = body.passwordHash.trim();
@@ -229,8 +229,8 @@ export async function PUT(request: NextRequest) {
 
   } catch (error) {
     console.error('PUT error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }
@@ -241,9 +241,9 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id || isNaN(parseInt(id))) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: "Valid ID is required",
-        code: "INVALID_ID" 
+        code: "INVALID_ID"
       }, { status: 400 });
     }
 
@@ -254,8 +254,8 @@ export async function DELETE(request: NextRequest) {
       .limit(1);
 
     if (existingUser.length === 0) {
-      return NextResponse.json({ 
-        error: 'User not found' 
+      return NextResponse.json({
+        error: 'User not found'
       }, { status: 404 });
     }
 
@@ -271,8 +271,8 @@ export async function DELETE(request: NextRequest) {
 
   } catch (error) {
     console.error('DELETE error:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error: ' + error 
+    return NextResponse.json({
+      error: 'Internal server error: ' + error
     }, { status: 500 });
   }
 }

@@ -8,13 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { 
-  Code, 
-  Database, 
-  Cloud, 
-  Smartphone, 
-  Shield, 
-  Palette, 
+import {
+  Code,
+  Database,
+  Cloud,
+  Smartphone,
+  Shield,
+  Palette,
   BarChart3,
   Search,
   DollarSign,
@@ -41,7 +41,7 @@ interface CareerPath {
   outlook: string;
 }
 
-const categoryIcons: Record<string, JSX.Element> = {
+const categoryIcons: Record<string, any> = {
   "Software Development": <Code className="w-5 h-5" />,
   "Data Science": <Database className="w-5 h-5" />,
   "DevOps": <Cloud className="w-5 h-5" />,
@@ -93,11 +93,11 @@ export const CareerPathsGallery = () => {
 
   const filteredCareerPaths = careerPaths.filter(path => {
     const matchesSearch = path.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         path.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         path.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+      path.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      path.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+
     const matchesCategory = activeTab === "all" || path.category === activeTab;
-    
+
     return matchesSearch && matchesCategory;
   });
 
@@ -122,7 +122,7 @@ export const CareerPathsGallery = () => {
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-10 w-32" />
         </div>
-        
+
         <div className="flex gap-2 mb-6">
           {[...Array(6)].map((_, i) => (
             <Skeleton key={i} className="h-10 w-24" />
@@ -174,7 +174,7 @@ export const CareerPathsGallery = () => {
           <h2 className="text-2xl font-bold text-foreground">Career Paths</h2>
           <p className="text-muted-foreground">Explore diverse career opportunities in tech</p>
         </div>
-        
+
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
@@ -193,8 +193,8 @@ export const CareerPathsGallery = () => {
             All Careers
           </TabsTrigger>
           {categories.slice(1).map((category) => (
-            <TabsTrigger 
-              key={category} 
+            <TabsTrigger
+              key={category}
               value={category}
               className="flex items-center gap-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
@@ -217,29 +217,29 @@ export const CareerPathsGallery = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCareerPaths.map((career) => {
                 const isExpanded = expandedCards.has(career.id);
-                
+
                 return (
-                  <Card 
-                    key={career.id} 
+                  <Card
+                    key={career.id}
                     className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border hover:border-primary/20"
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2">
                           {categoryIcons[career.category]}
-                          <Badge 
-                            variant="secondary" 
+                          <Badge
+                            variant="secondary"
                             className={`${categoryColors[career.category]} border text-xs`}
                           >
                             {career.category}
                           </Badge>
                         </div>
                       </div>
-                      
+
                       <CardTitle className="text-lg leading-tight group-hover:text-primary transition-colors">
                         {career.title}
                       </CardTitle>
-                      
+
                       <div className="flex items-center gap-2 text-sm">
                         <DollarSign className="w-4 h-4 text-success" />
                         <span className="font-medium text-success">
@@ -261,9 +261,9 @@ export const CareerPathsGallery = () => {
                         </h4>
                         <div className="flex flex-wrap gap-1">
                           {career.skills.slice(0, isExpanded ? career.skills.length : 4).map((skill, index) => (
-                            <Badge 
-                              key={index} 
-                              variant="outline" 
+                            <Badge
+                              key={index}
+                              variant="outline"
                               className="text-xs hover:bg-accent hover:text-accent-foreground cursor-default transition-colors"
                               title={skill}
                             >
