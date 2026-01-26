@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { MainLayout } from '@/components/layout/main-layout';
+import { AuthProvider } from '@/contexts/auth-context';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -25,10 +26,13 @@ export default function RootLayout({
                     enableSystem
                     disableTransitionOnChange
                 >
-                    <MainLayout>{children}</MainLayout>
+                    <AuthProvider>
+                        <MainLayout>{children}</MainLayout>
+                    </AuthProvider>
                 </ThemeProvider>
             </body>
         </html>
     );
 }
+
 

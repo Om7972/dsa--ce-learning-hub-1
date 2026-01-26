@@ -1,6 +1,5 @@
 "use client";
 
-import { MainNav } from "@/components/layout/main-nav";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +9,7 @@ import { Mail, MessageSquare, Phone } from "lucide-react";
 
 export default function ContactPage() {
     return (
-        <div className="min-h-screen bg-background flex flex-col">
-            <MainNav />
+        <div className="flex flex-col min-h-full">
             <div className="container mx-auto px-6 py-12 flex-1 relative">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[300px] bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
 

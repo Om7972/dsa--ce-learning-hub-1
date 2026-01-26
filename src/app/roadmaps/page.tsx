@@ -1,6 +1,5 @@
 "use client";
 
-import { MainNav } from "@/components/layout/main-nav";
 import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,8 +38,7 @@ export default function RoadmapsPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-background flex flex-col">
-            <MainNav />
+        <div className="flex flex-col min-h-full">
             <div className="container mx-auto px-6 py-12 flex-1">
                 <div className="text-center mb-16">
                     <h1 className="text-4xl font-bold font-display mb-4">Career Locations & <span className="text-gradient">Roadmaps</span></h1>
