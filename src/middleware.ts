@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
 export async function middleware(request: NextRequest) {
     let response = NextResponse.next({
@@ -13,38 +13,66 @@ export async function middleware(request: NextRequest) {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
             cookies: {
-                getAll() {
-                    return request.cookies.getAll();
+                get(name: string) {
+                    return request.cookies.get(name)?.value;
                 },
-                setAll(cookiesToSet) {
-                    cookiesToSet.forEach(({ name, value, options }) => {
-                        request.cookies.set(name, value);
-                        response.cookies.set(name, value, options);
+                set(name: string, value: string, options: CookieOptions) {
+                    request.cookies.set({ name, value, ...options });
+                    response = NextResponse.next({
+                        request: {
+                            headers: request.headers,
+                        },
                     });
+                    response.cookies.set({ name, value, ...options });
+                },
+                remove(name: string, options: CookieOptions) {
+                    request.cookies.set({ name, value: '', ...options });
+                    response = NextResponse.next({
+                        request: {
+                            headers: request.headers,
+                        },
+                    });
+                    response.cookies.delete({ name, ...options });
                 },
             },
         }
     );
 
-    // Refresh session if expired
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
 
     const { pathname } = request.nextUrl;
 
-    // Define public routes
-    const publicRoutes = ['/', '/login', '/signup', '/auth/callback'];
-    const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith('/api/auth'));
+    // Define public routes that don't require authentication
+    const publicRoutes = ['/', '/auth/login', '/auth/signup', '/auth/callback', '/auth/reset-password'];
+    const isPublicRoute = publicRoutes.some(route => pathname === route) || pathname.startsWith('/api');
 
-    // Redirect unauthenticated users from protected routes
+    // If the user is not logged in and trying to access a protected route, redirect to login
     if (!user && !isPublicRoute) {
-        const redirectUrl = new URL('/login', request.url);
-        redirectUrl.searchParams.set('redirect', pathname);
-        return NextResponse.redirect(redirectUrl);
+        return NextResponse.redirect(new URL('/auth/login', request.url));
     }
 
-    // Redirect authenticated users from auth pages to dashboard
-    if (user && (pathname === '/login' || pathname === '/signup')) {
+    // If the user is logged in, prevent them from accessing auth pages
+    if (user && (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/signup'))) {
         return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
+    // Role-based access control for admin routes
+    if (pathname.startsWith('/admin')) {
+        if (!user) {
+            return NextResponse.redirect(new URL('/auth/login', request.url));
+        }
+
+        const { data: userData, error } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (error || !userData || userData.role !== 'admin') {
+            // Redirect to a 'not authorized' page or the dashboard
+            return NextResponse.redirect(new URL('/dashboard', request.url));
+        }
     }
 
     return response;

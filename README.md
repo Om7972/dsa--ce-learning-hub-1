@@ -1,36 +1,26 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DSA & Competitive Programming Learning Hub
+
+This is a Next.js application designed to be an interactive learning hub for Data Structures, Algorithms, and Competitive Programming.
+
+## Features
+
+- **Interactive Curriculum**: Browse subjects and topics in a structured manner.
+- **Problem Bank**: Practice solving problems with an in-browser code editor.
+- **User Progress Tracking**: Keep track of your progress through subjects and problems.
+- **Authentication**: Secure user authentication using Supabase.
 
 ## Getting Started
 
-First, run the development server:
+To get a local copy up and running, please follow the detailed instructions in the **[SETUP.md](SETUP.md)** file.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Tech Stack
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework**: [Next.js](https://nextjs.org)
+- **Database**: [Supabase](https://supabase.io)
+- **ORM**: [Drizzle ORM](https://orm.drizzle.team)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com)
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com)
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+To learn more about the technologies used in this project, refer to their official documentation.

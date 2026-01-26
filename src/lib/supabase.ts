@@ -34,56 +34,260 @@ export interface Database {
         Tables: {
             users: {
                 Row: {
-                    id: string;
-                    full_name: string;
-                    email: string;
-                    role: 'student' | 'instructor' | 'admin';
+                    id: string; // uuid
+                    full_name: string | null;
+                    role: string;
                     college: string | null;
                     year: number | null;
-                    avatar_url: string | null;
-                    bio: string | null;
                     created_at: string;
-                    updated_at: string;
                 };
-                Insert: Omit<Database['public']['Tables']['users']['Row'], 'created_at' | 'updated_at'>;
-                Update: Partial<Database['public']['Tables']['users']['Insert']>;
+                Insert: {
+                    id: string; // uuid
+                    full_name?: string | null;
+                    role?: string;
+                    college?: string | null;
+                    year?: number | null;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: string; // uuid
+                    full_name?: string | null;
+                    role?: string;
+                    college?: string | null;
+                    year?: number | null;
+                    created_at?: string;
+                };
             };
-            subjects: {
+            learning_paths: {
                 Row: {
-                    id: string;
-                    name: string;
+                    id: number;
+                    title: string;
                     description: string | null;
                     category: string;
-                    difficulty_level: 'beginner' | 'intermediate' | 'advanced';
-                    icon_url: string | null;
+                    level: string;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: number;
+                    title: string;
+                    description?: string | null;
+                    category: string;
+                    level: string;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: number;
+                    title?: string;
+                    description?: string | null;
+                    category?: string;
+                    level?: string;
+                    created_at?: string;
+                };
+            };
+            lessons: {
+                Row: {
+                    id: number;
+                    learning_path_id: number;
+                    title: string;
+                    content: string | null;
                     order_index: number;
                     created_at: string;
                 };
-            };
-            study_schedules: {
-                Row: {
-                    id: string;
-                    user_id: string;
-                    topic_id: string | null;
+                Insert: {
+                    id?: number;
+                    learning_path_id: number;
                     title: string;
-                    description: string | null;
-                    date: string;
-                    start_time: string;
-                    end_time: string;
-                    status: 'scheduled' | 'completed' | 'missed' | 'cancelled';
-                    created_at: string;
+                    content?: string | null;
+                    order_index: number;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: number;
+                    learning_path_id?: number;
+                    title?: string;
+                    content?: string | null;
+                    order_index?: number;
+                    created_at?: string;
                 };
             };
-            user_progress: {
+            dsa_problems: {
                 Row: {
-                    id: string;
-                    user_id: string;
-                    lesson_id: string;
-                    status: 'not_started' | 'in_progress' | 'completed';
-                    completed_at: string | null;
+                    id: number;
+                    title: string;
+                    difficulty: string;
+                    topic: string;
+                    description: string | null;
+                    sample_input: string | null;
+                    sample_output: string | null;
                     created_at: string;
+                };
+                Insert: {
+                    id?: number;
+                    title: string;
+                    difficulty: string;
+                    topic: string;
+                    description?: string | null;
+                    sample_input?: string | null;
+                    sample_output?: string | null;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: number;
+                    title?: string;
+                    difficulty?: string;
+                    topic?: string;
+                    description?: string | null;
+                    sample_input?: string | null;
+                    sample_output?: string | null;
+                    created_at?: string;
+                };
+            };
+            submissions: {
+                Row: {
+                    id: number;
+                    user_id: string; // uuid
+                    problem_id: number;
+                    code: string;
+                    status: string;
+                    language: string;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: number;
+                    user_id: string; // uuid
+                    problem_id: number;
+                    code: string;
+                    status: string;
+                    language: string;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: number;
+                    user_id?: string; // uuid
+                    problem_id?: number;
+                    code?: string;
+                    status?: string;
+                    language?: string;
+                    created_at?: string;
+                };
+            };
+            quizzes: {
+                Row: {
+                    id: number;
+                    subject: string;
+                    title: string;
+                    total_marks: number | null;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: number;
+                    subject: string;
+                    title: string;
+                    total_marks?: number | null;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: number;
+                    subject?: string;
+                    title?: string;
+                    total_marks?: number | null;
+                    created_at?: string;
+                };
+            };
+            quiz_questions: {
+                Row: {
+                    id: number;
+                    quiz_id: number;
+                    question: string;
+                    options: Json | null;
+                    correct_answer: string;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: number;
+                    quiz_id: number;
+                    question: string;
+                    options?: Json | null;
+                    correct_answer: string;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: number;
+                    quiz_id?: number;
+                    question?: string;
+                    options?: Json | null;
+                    correct_answer?: string;
+                    created_at?: string;
+                };
+            };
+            progress: {
+                Row: {
+                    id: number;
+                    user_id: string; // uuid
+                    lesson_id: number;
+                    completed: boolean;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: number;
+                    user_id: string; // uuid
+                    lesson_id: number;
+                    completed?: boolean;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: number;
+                    user_id?: string; // uuid
+                    lesson_id?: number;
+                    completed?: boolean;
+                    created_at?: string;
+                };
+            };
+            achievements: {
+                Row: {
+                    id: number;
+                    title: string;
+                    condition: string;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: number;
+                    title: string;
+                    condition: string;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: number;
+                    title?: string;
+                    condition?: string;
+                    created_at?: string;
+                };
+            };
+            certificates: {
+                Row: {
+                    id: number;
+                    user_id: string; // uuid
+                    learning_path_id: number;
+                    issued_at: string;
+                    certificate_url: string | null;
+                };
+                Insert: {
+                    id?: number;
+                    user_id: string; // uuid
+                    learning_path_id: number;
+                    issued_at?: string;
+                    certificate_url?: string | null;
+                };
+                Update: {
+                    id?: number;
+                    user_id?: string; // uuid
+                    learning_path_id?: number;
+                    issued_at?: string;
+                    certificate_url?: string | null;
                 };
             };
         };
+        Views: { [_ in never]: never };
+        Functions: { [_ in never]: never };
     };
 }

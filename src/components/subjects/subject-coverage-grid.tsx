@@ -106,7 +106,7 @@ export const SubjectCoverageGrid = () => {
       // Fetch subjects
       const subjectsResponse = await fetch('/api/subjects');
       if (!subjectsResponse.ok) throw new Error('Failed to fetch subjects');
-      const subjectsData: Subject[] = await subjectsResponse.json();
+      const subjectsData: Subject[] = (await subjectsResponse.json()) || [];
 
       // Fetch topics for each subject
       const subjectsWithData = await Promise.all(
@@ -170,8 +170,8 @@ export const SubjectCoverageGrid = () => {
   };
 
   const filteredSubjects = subjects.filter(subject => {
-    const matchesSearch = subject.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      subject.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (subject.title?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (subject.description?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "all" || subject.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -350,13 +350,13 @@ export const SubjectCoverageGrid = () => {
       </div>
 
       {filteredSubjects.length === 0 && (
-        <div className="text-center py-12">
-          <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">No subjects found</h3>
-          <p className="text-muted-foreground">
+        <div className="text-center py-16 bg-muted/50 rounded-lg border-2 border-dashed border-muted">
+          <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-6" strokeWidth={1.5} />
+          <h3 className="text-2xl font-semibold mb-2">No Subjects Found</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
             {searchTerm || selectedCategory !== "all"
-              ? "Try adjusting your search or filters"
-              : "No subjects available"}
+              ? "We couldn't find any subjects matching your search or filter criteria. Try a different query!"
+              : "It looks like there are no subjects available at the moment. Please check back later."}
           </p>
         </div>
       )}
