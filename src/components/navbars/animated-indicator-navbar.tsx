@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, X } from "lucide-react";
+import { Menu, X, Crosshair, Trophy, BarChart2, Users, Network, Scale, AlertTriangle, Cpu, TrendingUp, GitMerge, Map as MapIcon } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ const NAV_ITEMS = [
   { name: "Problems", link: "/problems" },
   { name: "Projects", link: "/projects" },
   { name: "Career Paths", link: "/career-paths" },
+  { name: "Community", link: "/community" },
 ];
 
 const AnimatedIndicatorNavbar = () => {
@@ -77,18 +78,61 @@ const AnimatedIndicatorNavbar = () => {
                 <NavigationMenuItem>
                   <NavigationMenuLink
                     data-nav-item={item.name}
+                    href={item.link} // Changed to href for direct navigation
                     onClick={() => setActiveItem(item.name)}
-                    className={`relative cursor-pointer text-sm font-medium hover:bg-transparent ${
-                      activeItem === item.name
-                        ? "text-foreground"
-                        : "text-muted-foreground"
-                    }`}
+                    className={`relative cursor-pointer text-sm font-medium hover:bg-transparent ${activeItem === item.name
+                      ? "text-foreground"
+                      : "text-muted-foreground"
+                      }`}
                   >
                     {item.name}
                   </NavigationMenuLink>
                 </NavigationMenuItem>
               </React.Fragment>
             ))}
+
+            {/* FEATURES MEGA MENU */}
+            <NavigationMenuItem>
+              <Popover>
+                <PopoverTrigger className="text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-1 group">
+                  Features
+                  <span className="ml-1 text-xs opacity-50 group-hover:rotate-180 transition-transform">▼</span>
+                </PopoverTrigger>
+                <PopoverContent className="w-[800px] p-6 bg-popover border rounded-xl shadow-2xl">
+                  <div className="grid grid-cols-2 gap-8">
+
+                    {/* Column 1: DSA & Tools */}
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
+                        <span className="w-1 h-4 bg-indigo-500 rounded-full"></span> DSA & Practice
+                      </h4>
+                      <div className="grid gap-2">
+                        <FeatureLink href="/dsa-practice/adaptive" title="Adaptive Practice" desc="Personalized difficulty engine" icon={<Crosshair className="w-4 h-4 text-indigo-500" />} />
+                        <FeatureLink href="/dsa-practice/contests" title="Timed Contests" desc="Compete on leaderboards" icon={<Trophy className="w-4 h-4 text-amber-500" />} />
+                        <FeatureLink href="/dsa-practice/comparison" title="Algo Comparison" desc="Compare algorithms side-by-side" icon={<Scale className="w-4 h-4 text-cyan-500" />} />
+                        <FeatureLink href="/dsa-practice/mistake-analyzer" title="Mistake Analyzer" desc="AI-powered error analysis" icon={<AlertTriangle className="w-4 h-4 text-red-500" />} />
+                        <FeatureLink href="/tools/complexity-predictor" title="Complexity Predictor" desc="Predict Time & Space complexity" icon={<Cpu className="w-4 h-4 text-purple-500" />} />
+                      </div>
+                    </div>
+
+                    {/* Column 2: Career & Growth */}
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
+                        <span className="w-1 h-4 bg-teal-500 rounded-full"></span> Career & Growth
+                      </h4>
+                      <div className="grid gap-2">
+                        <FeatureLink href="/ce-subjects/exam-mode" title="Exam Mode" desc="University exam focused revision" icon={<TrendingUp className="w-4 h-4 text-red-600" />} />
+                        <FeatureLink href="/ce-subjects/roadmap" title="Subject Roadmap" desc="Visual dependency graph" icon={<MapIcon className="w-4 h-4 text-green-600" />} />
+                        <FeatureLink href="/dashboard/stats" title="Stats & Heatmap" desc="Career readiness score" icon={<BarChart2 className="w-4 h-4 text-blue-500" />} />
+                        <FeatureLink href="/profile/skill-tree" title="Skill Tree" desc="Interactive skill visualization" icon={<GitMerge className="w-4 h-4 text-green-500" />} />
+                        <FeatureLink href="/community/mentors" title="Mentor Connect" desc="Book sessions with experts" icon={<Users className="w-4 h-4 text-teal-500" />} />
+                      </div>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </NavigationMenuItem>
+
             {/* Active Indicator */}
             <div
               ref={indicatorRef}
@@ -129,14 +173,12 @@ const AnimatedHamburger = ({ isOpen }: { isOpen: boolean }) => {
     <div className="group relative h-6 w-6">
       <div className="absolute inset-0">
         <Menu
-          className={`text-muted-foreground group-hover:text-foreground absolute transition-all duration-300 ${
-            isOpen ? "rotate-90 opacity-0" : "rotate-0 opacity-100"
-          }`}
+          className={`text-muted-foreground group-hover:text-foreground absolute transition-all duration-300 ${isOpen ? "rotate-90 opacity-0" : "rotate-0 opacity-100"
+            }`}
         />
         <X
-          className={`text-muted-foreground group-hover:text-foreground absolute transition-all duration-300 ${
-            isOpen ? "rotate-0 opacity-100" : "-rotate-90 opacity-0"
-          }`}
+          className={`text-muted-foreground group-hover:text-foreground absolute transition-all duration-300 ${isOpen ? "rotate-0 opacity-100" : "-rotate-90 opacity-0"
+            }`}
         />
       </div>
     </div>
@@ -169,11 +211,10 @@ const MobileNav = ({
                 <a
                   href={navItem.link}
                   onClick={() => setActiveItem(navItem.name)}
-                  className={`text-foreground flex items-center border-l-[3px] px-6 py-4 text-sm font-medium transition-all duration-75 ${
-                    activeItem === navItem.name
-                      ? "border-foreground text-foreground"
-                      : "text-muted-foreground hover:text-foreground border-transparent"
-                  }`}
+                  className={`text-foreground flex items-center border-l-[3px] px-6 py-4 text-sm font-medium transition-all duration-75 ${activeItem === navItem.name
+                    ? "border-foreground text-foreground"
+                    : "text-muted-foreground hover:text-foreground border-transparent"
+                    }`}
                 >
                   {navItem.name}
                 </a>
@@ -189,3 +230,19 @@ const MobileNav = ({
     </div>
   );
 };
+
+function FeatureLink({ href, title, desc, icon }: { href: string; title: string; desc: string; icon: React.ReactNode }) {
+  return (
+    <a href={href} className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted/60 transition-colors group">
+      <div className="mt-0.5 bg-background p-2 rounded-lg border shadow-sm group-hover:scale-105 transition-transform">
+        {icon}
+      </div>
+      <div>
+        <div className="text-sm font-semibold flex items-center gap-1 group-hover:text-primary transition-colors">
+          {title}
+        </div>
+        <p className="text-xs text-muted-foreground line-clamp-1">{desc}</p>
+      </div>
+    </a>
+  )
+}

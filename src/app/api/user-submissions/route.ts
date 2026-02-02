@@ -52,8 +52,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    if (userId && !isNaN(parseInt(userId))) {
-      conditions.push(eq(userSubmissions.userId, parseInt(userId)));
+    if (userId) {
+      conditions.push(eq(userSubmissions.userId, userId));
     }
 
     if (problemId && !isNaN(parseInt(problemId))) {
@@ -84,6 +84,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
+import { checkAchievements } from '@/lib/achievements';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -111,31 +113,11 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Validate IDs are valid integers
-    if (isNaN(parseInt(userId))) {
-      return NextResponse.json({
-        error: "userId must be a valid integer",
-        code: "INVALID_ID"
-      }, { status: 400 });
-    }
-
+    // Validate Problem ID (still integer)
     if (isNaN(parseInt(problemId))) {
       return NextResponse.json({
         error: "problemId must be a valid integer",
         code: "INVALID_ID"
-      }, { status: 400 });
-    }
-
-    // Check if referenced user exists
-    const userExists = await db.select()
-      .from(users)
-      .where(eq(users.id, parseInt(userId)))
-      .limit(1);
-
-    if (userExists.length === 0) {
-      return NextResponse.json({
-        error: "Referenced user does not exist",
-        code: "INVALID_FOREIGN_KEY"
       }, { status: 400 });
     }
 
@@ -159,13 +141,24 @@ export async function POST(request: NextRequest) {
     // Create new user submission
     const newRecord = await db.insert(userSubmissions)
       .values({
-        userId: parseInt(userId),
+        userId: userId.toString(), // Store UUID as string
         problemId: parseInt(problemId),
         code: sanitizedCode,
         status: submissionStatus,
         submittedAt: new Date().toISOString(),
       })
       .returning();
+
+    // Trigger Achievement Check (Fire and forget, or await)
+    // We await to ensure errors are caught if any, but don't block response too long.
+    if (submissionStatus === 'accepted') {
+      // We need to be careful not to crash the response if this fails
+      try {
+        await checkAchievements(userId.toString(), 'problem_solved');
+      } catch (achError) {
+        console.error("Achievement check failed:", achError);
+      }
+    }
 
     return NextResponse.json(newRecord[0], { status: 201 });
   } catch (error) {
@@ -175,6 +168,7 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
 
 export async function PUT(request: NextRequest) {
   try {
@@ -204,27 +198,16 @@ export async function PUT(request: NextRequest) {
 
     // Validate and prepare updates
     if (userId !== undefined) {
-      if (isNaN(parseInt(userId))) {
+      if (typeof userId !== 'string') {
         return NextResponse.json({
-          error: "userId must be a valid integer",
+          error: "userId must be a string",
           code: "INVALID_ID"
         }, { status: 400 });
       }
 
-      // Check if referenced user exists
-      const userExists = await db.select()
-        .from(users)
-        .where(eq(users.id, parseInt(userId)))
-        .limit(1);
+      // Check if referenced user exists (skipped for Supabase users)
 
-      if (userExists.length === 0) {
-        return NextResponse.json({
-          error: "Referenced user does not exist",
-          code: "INVALID_FOREIGN_KEY"
-        }, { status: 400 });
-      }
-
-      updates.userId = parseInt(userId);
+      updates.userId = userId;
     }
 
     if (problemId !== undefined) {

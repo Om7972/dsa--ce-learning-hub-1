@@ -91,7 +91,7 @@ export const projects = sqliteTable('projects', {
 
 export const userSubmissions = sqliteTable('user_submissions', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  userId: integer('user_id').references(() => users.id),
+  userId: text('user_id').notNull(), // UUID from Supabase
   problemId: integer('problem_id').references(() => problems.id),
   code: text('code').notNull(),
   status: text('status').notNull().default('pending'),

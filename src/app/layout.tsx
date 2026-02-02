@@ -4,6 +4,7 @@ import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
 import { MainLayout } from '@/components/layout/main-layout';
 import { AuthProvider } from '@/contexts/auth-context';
+import { AITutor } from '@/components/ai-tutor/AITutor';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -28,6 +29,7 @@ export default function RootLayout({
                 >
                     <AuthProvider>
                         <MainLayout>{children}</MainLayout>
+                        <AITutor />
                     </AuthProvider>
                 </ThemeProvider>
             </body>

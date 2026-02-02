@@ -137,7 +137,10 @@ const subjects: Subject[] = [
     }
 ];
 
+import { useRouter } from 'next/navigation';
+
 export default function CESubjectsPage() {
+    const router = useRouter();
     const [selectedSemester, setSelectedSemester] = useState<number | 'all'>('all');
 
     const filteredSubjects = subjects.filter(subject =>
@@ -154,14 +157,26 @@ export default function CESubjectsPage() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="space-y-2"
+                className="space-y-4"
             >
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                    Computer Engineering Subjects
-                </h1>
-                <p className="text-muted-foreground text-lg">
-                    Master core CE concepts with comprehensive study materials and practice
-                </p>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                            Computer Engineering Subjects
+                        </h1>
+                        <p className="text-muted-foreground text-lg">
+                            Master core CE concepts with comprehensive study materials and practice
+                        </p>
+                    </div>
+                    <div className="flex gap-3">
+                        <Button variant="outline" onClick={() => router.push('/ce-subjects/roadmap')}>
+                            <Network className="mr-2 h-4 w-4" /> View Roadmap
+                        </Button>
+                        <Button className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700" onClick={() => router.push('/ce-subjects/exam-mode')}>
+                            <TrendingUp className="mr-2 h-4 w-4" /> Exam Mode (Beta)
+                        </Button>
+                    </div>
+                </div>
             </motion.div>
 
             {/* Overall Stats */}
