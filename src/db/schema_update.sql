@@ -378,3 +378,8 @@ values
 ('react', 'React.js', 'web', 'web', 50, 200),
 ('db', 'Databases', 'web', 'web', 150, 200)
 on conflict (id) do nothing;
+
+-- 15. PROFILE FIELDS
+alter table users add column if not exists bio text;
+alter table users add column if not exists phone text;
+alter table users add column if not exists avatar_url text;

@@ -181,6 +181,11 @@ export const SubjectCoverageGrid = () => {
     setDialogOpen(true);
   };
 
+  const getCategoryIcon = (category: string) => {
+    const normalizedCategory = category?.toLowerCase();
+    return categoryIcons[normalizedCategory as keyof typeof categoryIcons] || Database;
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -274,7 +279,7 @@ export const SubjectCoverageGrid = () => {
       {/* Subjects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredSubjects.map((subject) => {
-          const CategoryIcon = categoryIcons[subject.category];
+          const CategoryIcon = getCategoryIcon(subject.category);
 
           return (
             <Card
@@ -290,8 +295,8 @@ export const SubjectCoverageGrid = () => {
                       {subject.title}
                     </CardTitle>
                   </div>
-                  <Badge className={`${categoryColors[subject.category]} text-xs`}>
-                    {subject.category.toUpperCase()}
+                  <Badge className={`${categoryColors[subject.category] || "bg-gray-100 text-gray-700"} text-xs`}>
+                    {subject.category?.toUpperCase() || "UNKNOWN"}
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-2">
@@ -302,7 +307,7 @@ export const SubjectCoverageGrid = () => {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-4">
-                    <Badge variant="outline" className={difficultyColors[subject.difficulty]}>
+                    <Badge variant="outline" className={difficultyColors[subject.difficulty] || "bg-gray-100"}>
                       {subject.difficulty}
                     </Badge>
                     <div className="flex items-center gap-1 text-muted-foreground">
@@ -368,7 +373,7 @@ export const SubjectCoverageGrid = () => {
             <DialogTitle className="flex items-center gap-2">
               {selectedSubject && (
                 <>
-                  {React.createElement(categoryIcons[selectedSubject.category], { className: "w-6 h-6" })}
+                  {React.createElement(getCategoryIcon(selectedSubject.category), { className: "w-6 h-6" })}
                   {selectedSubject.title}
                 </>
               )}
@@ -417,7 +422,7 @@ export const SubjectCoverageGrid = () => {
                             <h5 className="font-medium">{topic.title}</h5>
                             <Badge
                               variant="outline"
-                              className={difficultyColors[topic.difficulty]}
+                              className={difficultyColors[topic.difficulty] || "bg-gray-100"}
                             >
                               {topic.difficulty}
                             </Badge>
@@ -494,3 +499,5 @@ export const SubjectCoverageGrid = () => {
     </div>
   );
 };
+
+export default SubjectCoverageGrid;

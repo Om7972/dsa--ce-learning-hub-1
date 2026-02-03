@@ -41,8 +41,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (!isConfigured) {
-            // Mock mode: Check local storage or just default to signed out
-            // For better demo experience, let's default to signed IN if they previously signed in
             const mockSession = localStorage.getItem('mock-session');
             if (mockSession === 'active') {
                 setUser(MOCK_USER);
@@ -52,15 +50,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Real Supabase mode
+        let mounted = true;
+
         const checkSession = async () => {
             try {
                 const { data: { session } } = await supabase.auth.getSession();
-                setUser(session?.user ?? null);
+                if (mounted) {
+                    setUser(session?.user ?? null);
+                }
             } catch (error) {
                 console.error("Supabase auth error:", error);
-                setUser(null);
+                if (mounted) setUser(null);
             } finally {
-                setLoading(false);
+                if (mounted) setLoading(false);
             }
         };
 
@@ -69,12 +71,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
-            setLoading(false);
+            if (mounted) {
+                setUser(session?.user ?? null);
+                setLoading(false);
+            }
         });
 
-        return () => subscription.unsubscribe();
-    }, [supabase.auth, isConfigured]);
+        return () => {
+            mounted = false;
+            subscription.unsubscribe();
+        };
+    }, [supabase, isConfigured]);
 
     const signIn = async (email: string, password: string) => {
         if (!isConfigured) {

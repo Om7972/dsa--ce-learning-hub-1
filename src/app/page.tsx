@@ -179,13 +179,13 @@ export default function LandingPage() {
               {/* CTA Buttons */}
               <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
                 <Link href="/dashboard">
-                  <Button size="lg" className="h-14 px-8 text-lg font-bold bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 text-white rounded-full shadow-lg shadow-primary/50 group">
+                  <Button size="lg" className="h-14 px-8 text-lg font-bold bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 text-white rounded-full shadow-lg shadow-primary/50 group" suppressHydrationWarning>
                     Start Learning Free
                     <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
                 <Link href="#features">
-                  <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full border-2">
+                  <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full border-2" suppressHydrationWarning>
                     Explore Features
                   </Button>
                 </Link>
@@ -326,7 +326,7 @@ export default function LandingPage() {
                 Join thousands of students who are already mastering DSA and acing their placements.
               </p>
               <Link href="/dashboard">
-                <Button size="lg" className="h-14 px-8 text-lg font-bold bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 text-white rounded-full shadow-lg shadow-primary/50">
+                <Button size="lg" className="h-14 px-8 text-lg font-bold bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 text-white rounded-full shadow-lg shadow-primary/50" suppressHydrationWarning>
                   Start Your Journey Today
                   <Rocket className="ml-2 h-5 w-5" />
                 </Button>

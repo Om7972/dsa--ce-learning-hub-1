@@ -22,17 +22,17 @@ export function Footer() {
                         </p>
                         <div className="flex items-center gap-4 pt-2">
                             <Link href="https://github.com" target="_blank">
-                                <Button variant="ghost" size="icon" className="hover:text-primary hover:bg-primary/10">
+                                <Button variant="ghost" size="icon" className="hover:text-primary hover:bg-primary/10" suppressHydrationWarning>
                                     <Github className="h-5 w-5" />
                                 </Button>
                             </Link>
                             <Link href="https://twitter.com" target="_blank">
-                                <Button variant="ghost" size="icon" className="hover:text-primary hover:bg-primary/10">
+                                <Button variant="ghost" size="icon" className="hover:text-primary hover:bg-primary/10" suppressHydrationWarning>
                                     <Twitter className="h-5 w-5" />
                                 </Button>
                             </Link>
                             <Link href="https://linkedin.com" target="_blank">
-                                <Button variant="ghost" size="icon" className="hover:text-primary hover:bg-primary/10">
+                                <Button variant="ghost" size="icon" className="hover:text-primary hover:bg-primary/10" suppressHydrationWarning>
                                     <Linkedin className="h-5 w-5" />
                                 </Button>
                             </Link>
@@ -91,8 +91,9 @@ export function Footer() {
                                 type="email"
                                 placeholder="Enter your email"
                                 className="bg-secondary/50 border border-border rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                                suppressHydrationWarning
                             />
-                            <Button size="icon" className="pink-glow shrink-0">
+                            <Button size="icon" className="pink-glow shrink-0" suppressHydrationWarning>
                                 <Mail className="h-4 w-4" />
                             </Button>
                         </form>

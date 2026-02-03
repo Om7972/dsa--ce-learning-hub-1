@@ -46,6 +46,9 @@ export interface Database {
                     role: string;
                     college: string | null;
                     year: number | null;
+                    bio: string | null;
+                    phone: string | null;
+                    avatar_url: string | null;
                     created_at: string;
                 };
                 Insert: {
@@ -54,6 +57,9 @@ export interface Database {
                     role?: string;
                     college?: string | null;
                     year?: number | null;
+                    bio?: string | null;
+                    phone?: string | null;
+                    avatar_url?: string | null;
                     created_at?: string;
                 };
                 Update: {
@@ -62,6 +68,9 @@ export interface Database {
                     role?: string;
                     college?: string | null;
                     year?: number | null;
+                    bio?: string | null;
+                    phone?: string | null;
+                    avatar_url?: string | null;
                     created_at?: string;
                 };
             };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
     User,
@@ -23,9 +23,79 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { createSupabaseBrowserClient } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 export default function SettingsPage() {
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [updating, setUpdating] = useState(false);
+
+    // Profile State
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [bio, setBio] = useState('');
+    const [userId, setUserId] = useState('');
+
+    const supabase = createSupabaseBrowserClient();
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+
+                setUserId(user.id);
+                setEmail(user.email || '');
+
+                const { data: profile } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profile) {
+                    const names = (profile.full_name || '').split(' ');
+                    setFirstName(names[0] || '');
+                    setLastName(names.slice(1).join(' ') || '');
+                    setPhone(profile.phone || '');
+                    setBio(profile.bio || '');
+                }
+            } catch (error) {
+                console.error("Error fetching profile:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProfile();
+    }, []);
+
+    const handleSaveProfile = async () => {
+        setUpdating(true);
+        try {
+            const fullName = `${firstName} ${lastName}`.trim();
+            const { error } = await supabase
+                .from('users')
+                .update({
+                    full_name: fullName,
+                    phone,
+                    bio
+                })
+                .eq('id', userId);
+
+            if (error) throw error;
+            toast.success("Profile updated successfully!");
+        } catch (error: any) {
+            console.error("Error updating profile:", error);
+            toast.error("Failed to update profile.");
+        } finally {
+            setUpdating(false);
+        }
+    };
+
     const [notifications, setNotifications] = useState({
         email: true,
         push: true,
@@ -33,6 +103,10 @@ export default function SettingsPage() {
         reminders: false,
         newsletter: true
     });
+
+    if (loading) {
+        return <div className="p-8 text-center text-muted-foreground">Loading settings...</div>;
+    }
 
     return (
         <div className="space-y-8">
@@ -87,8 +161,8 @@ export default function SettingsPage() {
                                 {/* Avatar */}
                                 <div className="flex items-center gap-4">
                                     <Avatar className="h-20 w-20">
-                                        <AvatarImage src="/avatars/01.png" />
-                                        <AvatarFallback>JD</AvatarFallback>
+                                        <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${firstName}`} />
+                                        <AvatarFallback>{firstName[0]}</AvatarFallback>
                                     </Avatar>
                                     <div className="space-y-2">
                                         <Button variant="outline" size="sm">Change Avatar</Button>
@@ -102,29 +176,51 @@ export default function SettingsPage() {
                                 <div className="grid gap-4 md:grid-cols-2">
                                     <div className="space-y-2">
                                         <Label htmlFor="firstName">First Name</Label>
-                                        <Input id="firstName" defaultValue="John" />
+                                        <Input
+                                            id="firstName"
+                                            value={firstName}
+                                            onChange={(e) => setFirstName(e.target.value)}
+                                        />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="lastName">Last Name</Label>
-                                        <Input id="lastName" defaultValue="Doe" />
+                                        <Input
+                                            id="lastName"
+                                            value={lastName}
+                                            onChange={(e) => setLastName(e.target.value)}
+                                        />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="email">Email</Label>
-                                        <Input id="email" type="email" defaultValue="john@example.com" />
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={email}
+                                            disabled
+                                            className="bg-muted text-muted-foreground"
+                                        />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="phone">Phone</Label>
-                                        <Input id="phone" defaultValue="+1 (555) 123-4567" />
+                                        <Input
+                                            id="phone"
+                                            value={phone}
+                                            onChange={(e) => setPhone(e.target.value)}
+                                        />
                                     </div>
                                     <div className="space-y-2 md:col-span-2">
                                         <Label htmlFor="bio">Bio</Label>
-                                        <Input id="bio" defaultValue="Computer Engineering Student" />
+                                        <Input
+                                            id="bio"
+                                            value={bio}
+                                            onChange={(e) => setBio(e.target.value)}
+                                        />
                                     </div>
                                 </div>
 
-                                <Button>
+                                <Button onClick={handleSaveProfile} disabled={updating}>
                                     <Save className="mr-2 h-4 w-4" />
-                                    Save Changes
+                                    {updating ? 'Saving...' : 'Save Changes'}
                                 </Button>
                             </CardContent>
                         </Card>
@@ -143,35 +239,35 @@ export default function SettingsPage() {
                                     title="Email Notifications"
                                     description="Receive updates via email"
                                     checked={notifications.email}
-                                    onCheckedChange={(checked) => setNotifications({ ...notifications, email: checked })}
+                                    onCheckedChange={(checked: boolean) => setNotifications({ ...notifications, email: checked })}
                                 />
                                 <NotificationToggle
                                     icon={Bell}
                                     title="Push Notifications"
                                     description="Receive push notifications in browser"
                                     checked={notifications.push}
-                                    onCheckedChange={(checked) => setNotifications({ ...notifications, push: checked })}
+                                    onCheckedChange={(checked: boolean) => setNotifications({ ...notifications, push: checked })}
                                 />
                                 <NotificationToggle
                                     icon={Badge}
                                     title="Achievement Alerts"
                                     description="Get notified when you earn new badges"
                                     checked={notifications.achievements}
-                                    onCheckedChange={(checked) => setNotifications({ ...notifications, achievements: checked })}
+                                    onCheckedChange={(checked: boolean) => setNotifications({ ...notifications, achievements: checked })}
                                 />
                                 <NotificationToggle
                                     icon={Bell}
                                     title="Study Reminders"
                                     description="Daily reminders to keep your streak"
                                     checked={notifications.reminders}
-                                    onCheckedChange={(checked) => setNotifications({ ...notifications, reminders: checked })}
+                                    onCheckedChange={(checked: boolean) => setNotifications({ ...notifications, reminders: checked })}
                                 />
                                 <NotificationToggle
                                     icon={Mail}
                                     title="Newsletter"
                                     description="Monthly newsletter with tips and updates"
                                     checked={notifications.newsletter}
-                                    onCheckedChange={(checked) => setNotifications({ ...notifications, newsletter: checked })}
+                                    onCheckedChange={(checked: boolean) => setNotifications({ ...notifications, newsletter: checked })}
                                 />
                             </CardContent>
                         </Card>

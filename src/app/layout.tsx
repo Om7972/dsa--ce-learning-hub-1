@@ -13,6 +13,8 @@ export const metadata: Metadata = {
     description: 'A comprehensive platform for learning Data Structures, Algorithms, and Computer Engineering subjects.',
 };
 
+import { Toaster } from 'sonner';
+
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -30,6 +32,7 @@ export default function RootLayout({
                     <AuthProvider>
                         <MainLayout>{children}</MainLayout>
                         <AITutor />
+                        <Toaster />
                     </AuthProvider>
                 </ThemeProvider>
             </body>

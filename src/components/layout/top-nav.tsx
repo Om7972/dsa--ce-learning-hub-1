@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,7 +20,17 @@ import {
     BookMarked,
     Zap,
     Code2,
-    Target
+    Target,
+    LayoutDashboard,
+    Map,
+    Eye,
+    List,
+    FileText,
+    Newspaper,
+    HelpCircle,
+    Briefcase,
+    BookOpen,
+    Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,8 +43,18 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    NavigationMenu,
+    NavigationMenuContent,
+    NavigationMenuItem,
+    NavigationMenuLink,
+    NavigationMenuList,
+    NavigationMenuTrigger,
+    navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/auth-context';
+import { cn } from "@/lib/utils";
 
 export function TopNav() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -95,22 +115,66 @@ export function TopNav() {
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-1">
-                        <NavLink href="/dashboard" active={pathname === '/dashboard'}>
-                            Dashboard
-                        </NavLink>
-                        <NavLink href="/learning-paths" active={pathname.startsWith('/learning-paths')}>
-                            Learning Paths
-                        </NavLink>
-                        <NavLink href="/dsa-practice" active={pathname.startsWith('/dsa-practice')}>
-                            DSA Practice
-                        </NavLink>
-                        <NavLink href="/ce-subjects" active={pathname.startsWith('/ce-subjects')}>
-                            CE Subjects
-                        </NavLink>
-                        <NavLink href="/ai-tutor" active={pathname.startsWith('/ai-tutor')}>
-                            <Sparkles className="h-4 w-4 mr-1 inline" />
-                            AI Tutor
-                        </NavLink>
+                        <NavigationMenu>
+                            <NavigationMenuList>
+                                <NavigationMenuItem>
+                                    <NavigationMenuTrigger className="bg-transparent hover:bg-accent/50">Platform</NavigationMenuTrigger>
+                                    <NavigationMenuContent>
+                                        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                                            <ListItem href="/dashboard" title="Dashboard" icon={<LayoutDashboard className="h-4 w-4" />}>
+                                                Your personal learning center and progress tracking.
+                                            </ListItem>
+                                            <ListItem href="/curriculum" title="Curriculum" icon={<BookOpen className="h-4 w-4" />}>
+                                                Comprehensive structured learning paths.
+                                            </ListItem>
+                                            <ListItem href="/visualizer" title="DSA Visualizer" icon={<Eye className="h-4 w-4" />}>
+                                                Interactive algorithm visualizations.
+                                            </ListItem>
+                                            <ListItem href="/problems" title="Problem Bank" icon={<List className="h-4 w-4" />}>
+                                                Practice problems sorted by difficulty and topic.
+                                            </ListItem>
+                                            <ListItem href="/roadmaps" title="Career Roadmaps" icon={<Map className="h-4 w-4" />}>
+                                                Step-by-step guides for different tech roles.
+                                            </ListItem>
+                                            <ListItem href="/ai-tutor" title="AI Tutor" icon={<Sparkles className="h-4 w-4" />}>
+                                                Get instant help from our AI assistant.
+                                            </ListItem>
+                                        </ul>
+                                    </NavigationMenuContent>
+                                </NavigationMenuItem>
+
+                                <NavigationMenuItem>
+                                    <NavigationMenuTrigger className="bg-transparent hover:bg-accent/50">Resources</NavigationMenuTrigger>
+                                    <NavigationMenuContent>
+                                        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                                            <ListItem href="/blog" title="Engineering Blog" icon={<Newspaper className="h-4 w-4" />}>
+                                                Tech articles, tutorials, and industry insights.
+                                            </ListItem>
+                                            <ListItem href="/community" title="Community Forum" icon={<Users className="h-4 w-4" />}>
+                                                Connect with other students and mentors.
+                                            </ListItem>
+                                            <ListItem href="/cheatsheets" title="Cheat Sheets" icon={<FileText className="h-4 w-4" />}>
+                                                Quick references for exams and interviews.
+                                            </ListItem>
+                                            <ListItem href="/interview-prep" title="Interview Prep" icon={<Briefcase className="h-4 w-4" />}>
+                                                Mock interviews and company-specific guides.
+                                            </ListItem>
+                                            <ListItem href="/faq" title="FAQs" icon={<HelpCircle className="h-4 w-4" />}>
+                                                Common questions about the platform.
+                                            </ListItem>
+                                        </ul>
+                                    </NavigationMenuContent>
+                                </NavigationMenuItem>
+
+                                <NavigationMenuItem>
+                                    <NavigationMenuLink asChild>
+                                        <Link href="/learning-paths" className={navigationMenuTriggerStyle() + " bg-transparent hover:bg-accent/50"}>
+                                            Learning Paths
+                                        </Link>
+                                    </NavigationMenuLink>
+                                </NavigationMenuItem>
+                            </NavigationMenuList>
+                        </NavigationMenu>
                     </div>
                 </div>
 
@@ -161,6 +225,7 @@ export function TopNav() {
                                 size="icon"
                                 className="hidden md:flex"
                                 onClick={() => setIsSearchOpen(true)}
+                                suppressHydrationWarning
                             >
                                 <Search className="h-4 w-4" />
                             </Button>
@@ -170,7 +235,7 @@ export function TopNav() {
                     {/* Notifications */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="relative">
+                            <Button variant="ghost" size="icon" className="relative" suppressHydrationWarning>
                                 <Bell className="h-4 w-4" />
                                 {unreadCount > 0 && (
                                     <motion.span
@@ -202,7 +267,7 @@ export function TopNav() {
                     {/* User Menu */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="gap-2 px-2">
+                            <Button variant="ghost" className="gap-2 px-2" suppressHydrationWarning>
                                 <Avatar className="h-8 w-8 border-2 border-primary">
                                     <AvatarImage src={userData.avatar} alt={userData.name} />
                                     <AvatarFallback>{userData.name.charAt(0)}</AvatarFallback>
@@ -256,6 +321,7 @@ export function TopNav() {
                         size="icon"
                         className="md:hidden"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        suppressHydrationWarning
                     >
                         {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                     </Button>
@@ -337,3 +403,33 @@ function MobileNavLink({ href, onClick, children }: { href: string; onClick: () 
         </Link>
     );
 }
+
+const ListItem = React.forwardRef<
+    React.ElementRef<typeof Link>,
+    React.ComponentPropsWithoutRef<typeof Link> & { title: string; icon: React.ReactNode }
+>(({ className, title, icon, children, href, ...props }, ref) => {
+    return (
+        <li>
+            <NavigationMenuLink asChild>
+                <Link
+                    ref={ref}
+                    href={href || "/"}
+                    className={cn(
+                        "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                        className
+                    )}
+                    {...props}
+                >
+                    <div className="flex items-center gap-2 text-sm font-medium leading-none">
+                        {icon}
+                        {title}
+                    </div>
+                    <p className="line-clamp-2 text-sm leading-snug text-muted-foreground mt-1">
+                        {children}
+                    </p>
+                </Link>
+            </NavigationMenuLink>
+        </li>
+    )
+})
+ListItem.displayName = "ListItem"

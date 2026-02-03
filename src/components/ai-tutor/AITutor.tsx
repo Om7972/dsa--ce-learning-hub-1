@@ -74,6 +74,7 @@ export function AITutor() {
             <SheetTrigger asChild>
                 <Button
                     className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-all z-50 p-0"
+                    suppressHydrationWarning
                 >
                     <Sparkles className="h-6 w-6 text-white" />
                 </Button>

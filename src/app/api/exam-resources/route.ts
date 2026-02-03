@@ -17,6 +17,7 @@ export async function GET(req: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
+        console.error("Error fetching exam resources:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
