@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/auth-context';
+import { createSupabaseBrowserClient } from '@/lib/supabase';
 import {
     User,
     Mail,
@@ -27,28 +29,61 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function ProfilePage() {
     const { user } = useAuth();
+    const [profile, setProfile] = useState<any>(null);
+    const [userStats, setUserStats] = useState<any>(null);
+    const supabase = createSupabaseBrowserClient();
+
+    useEffect(() => {
+        async function fetchData() {
+            if (!user) return;
+
+            try {
+                // Fetch profile
+                const { data: profileData } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profileData) setProfile(profileData);
+
+                // Fetch stats
+                const { data: statsData } = await supabase
+                    .from('user_stats')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (statsData) setUserStats(statsData);
+            } catch (error) {
+                console.error("Error fetching profile data:", error);
+            }
+        }
+
+        fetchData();
+    }, [user, supabase]);
 
     // Mock user data augmented with real auth data
     const userData = {
-        name: user?.user_metadata?.full_name || 'Student',
+        name: profile?.full_name || user?.user_metadata?.full_name || 'Student',
         email: user?.email || 'student@example.com',
-        avatar: '/avatars/01.png',
-        username: 'coder_one',
-        joinDate: 'January 2026',
-        location: 'Mumbai, India',
-        bio: 'Computer Engineering student passionate about Algorithms and System Design. Currently learning Graph Theory.',
-        role: 'Student',
-        level: 12,
-        xp: 12500,
-        nextLevelXp: 15000,
-        streak: 7
+        avatar: profile?.avatar_url || '/avatars/01.png',
+        username: profile?.full_name?.toLowerCase().replace(/\s+/g, '_') || 'coder_one',
+        joinDate: user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'January 2026',
+        location: profile?.college || 'Mumbai, India',
+        bio: profile?.bio || 'Computer Engineering student passionate about Algorithms and System Design. Currently learning Graph Theory.',
+        role: profile?.role || 'Student',
+        level: userStats ? Math.floor(userStats.total_xp / 1000) + 1 : 12,
+        xp: userStats?.total_xp || 12500,
+        nextLevelXp: userStats ? (Math.floor(userStats.total_xp / 1000) + 1) * 1000 : 15000,
+        streak: userStats?.current_streak || 7
     };
 
     const stats = [
         { label: 'Global Rank', value: '#1,234', icon: Trophy, color: 'text-yellow-500' },
-        { label: 'Problems Solved', value: '145', icon: Code, color: 'text-blue-500' },
-        { label: 'Current Streak', value: '7 Days', icon: Flame, color: 'text-orange-500' },
-        { label: 'Reputation', value: '850', icon: Star, color: 'text-purple-500' },
+        { label: 'Problems Solved', value: userStats?.problems_solved?.toString() || '0', icon: Code, color: 'text-blue-500' },
+        { label: 'Current Streak', value: `${userStats?.current_streak || 0} Days`, icon: Flame, color: 'text-orange-500' },
+        { label: 'Reputation', value: userStats?.total_xp?.toString() || '0', icon: Star, color: 'text-purple-500' },
     ];
 
     const RecentActivity = [

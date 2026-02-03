@@ -180,27 +180,31 @@ export function TopNav() {
 
                 {/* Right Section */}
                 <div className="flex items-center gap-2">
-                    {/* Streak Badge */}
-                    <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full bg-orange-100 dark:bg-orange-950 border border-orange-200 dark:border-orange-800"
-                    >
-                        <Flame className="h-4 w-4 text-orange-500" />
-                        <span className="text-sm font-semibold text-orange-700 dark:text-orange-300">
-                            {userData.streak} day streak
-                        </span>
-                    </motion.div>
+                    {user && (
+                        <>
+                            {/* Streak Badge */}
+                            <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full bg-orange-100 dark:bg-orange-950 border border-orange-200 dark:border-orange-800"
+                            >
+                                <Flame className="h-4 w-4 text-orange-500" />
+                                <span className="text-sm font-semibold text-orange-700 dark:text-orange-300">
+                                    {userData.streak} day streak
+                                </span>
+                            </motion.div>
 
-                    {/* Points Badge */}
-                    <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full bg-yellow-100 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800"
-                    >
-                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                        <span className="text-sm font-semibold text-yellow-700 dark:text-yellow-300">
-                            {userData.points}
-                        </span>
-                    </motion.div>
+                            {/* Points Badge */}
+                            <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full bg-yellow-100 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800"
+                            >
+                                <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                                <span className="text-sm font-semibold text-yellow-700 dark:text-yellow-300">
+                                    {userData.points}
+                                </span>
+                            </motion.div>
+                        </>
+                    )}
 
                     {/* Search */}
                     <AnimatePresence>
@@ -232,88 +236,101 @@ export function TopNav() {
                         )}
                     </AnimatePresence>
 
-                    {/* Notifications */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="relative" suppressHydrationWarning>
-                                <Bell className="h-4 w-4" />
-                                {unreadCount > 0 && (
-                                    <motion.span
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center"
-                                    >
-                                        {unreadCount}
-                                    </motion.span>
-                                )}
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-80">
-                            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            {notifications.map((notification) => (
-                                <DropdownMenuItem key={notification.id} className="flex items-start gap-2 p-3">
-                                    {notification.unread && (
-                                        <div className="h-2 w-2 rounded-full bg-blue-500 mt-1.5" />
-                                    )}
-                                    <span className={notification.unread ? 'font-medium' : ''}>
-                                        {notification.text}
-                                    </span>
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    {user ? (
+                        <>
+                            {/* Notifications */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="relative" suppressHydrationWarning>
+                                        <Bell className="h-4 w-4" />
+                                        {unreadCount > 0 && (
+                                            <motion.span
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-[10px] font-bold text-white flex items-center justify-center"
+                                            >
+                                                {unreadCount}
+                                            </motion.span>
+                                        )}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-80">
+                                    <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    {notifications.map((notification) => (
+                                        <DropdownMenuItem key={notification.id} className="flex items-start gap-2 p-3">
+                                            {notification.unread && (
+                                                <div className="h-2 w-2 rounded-full bg-blue-500 mt-1.5" />
+                                            )}
+                                            <span className={notification.unread ? 'font-medium' : ''}>
+                                                {notification.text}
+                                            </span>
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
 
-                    {/* User Menu */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="gap-2 px-2" suppressHydrationWarning>
-                                <Avatar className="h-8 w-8 border-2 border-primary">
-                                    <AvatarImage src={userData.avatar} alt={userData.name} />
-                                    <AvatarFallback>{userData.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <ChevronDown className="h-4 w-4 hidden sm:block" />
+                            {/* User Menu */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="gap-2 px-2" suppressHydrationWarning>
+                                        <Avatar className="h-8 w-8 border-2 border-primary">
+                                            <AvatarImage src={userData.avatar} alt={userData.name} />
+                                            <AvatarFallback>{userData.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <ChevronDown className="h-4 w-4 hidden sm:block" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56">
+                                    <DropdownMenuLabel>
+                                        <div className="flex flex-col space-y-1">
+                                            <p className="text-sm font-medium">{userData.name}</p>
+                                            <p className="text-xs text-muted-foreground">{userData.email}</p>
+                                        </div>
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/profile" className="cursor-pointer">
+                                            <User className="mr-2 h-4 w-4" />
+                                            Profile
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/progress" className="cursor-pointer">
+                                            <Trophy className="mr-2 h-4 w-4" />
+                                            Progress
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/bookmarks" className="cursor-pointer">
+                                            <BookMarked className="mr-2 h-4 w-4" />
+                                            Bookmarks
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/settings" className="cursor-pointer">
+                                            <Settings className="mr-2 h-4 w-4" />
+                                            Settings
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        Log out
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </>
+                    ) : (
+                        <div className="hidden md:flex items-center gap-2 ml-2">
+                            <Button variant="ghost" size="sm" asChild>
+                                <Link href="/login">Sign In</Link>
                             </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuLabel>
-                                <div className="flex flex-col space-y-1">
-                                    <p className="text-sm font-medium">{userData.name}</p>
-                                    <p className="text-xs text-muted-foreground">{userData.email}</p>
-                                </div>
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild>
-                                <Link href="/profile" className="cursor-pointer">
-                                    <User className="mr-2 h-4 w-4" />
-                                    Profile
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <Link href="/progress" className="cursor-pointer">
-                                    <Trophy className="mr-2 h-4 w-4" />
-                                    Progress
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <Link href="/bookmarks" className="cursor-pointer">
-                                    <BookMarked className="mr-2 h-4 w-4" />
-                                    Bookmarks
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                                <Link href="/settings" className="cursor-pointer">
-                                    <Settings className="mr-2 h-4 w-4" />
-                                    Settings
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
-                                <LogOut className="mr-2 h-4 w-4" />
-                                Log out
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm" asChild>
+                                <Link href="/signup">Sign Up</Link>
+                            </Button>
+                        </div>
+                    )}
 
                     {/* Mobile Menu Toggle */}
                     <Button
@@ -363,6 +380,29 @@ export function TopNav() {
                             <MobileNavLink href="/support" onClick={() => setIsMobileMenuOpen(false)}>
                                 Support
                             </MobileNavLink>
+
+                            <div className="border-t my-2 pt-2">
+                                {user ? (
+                                    <div
+                                        onClick={() => {
+                                            handleLogout();
+                                            setIsMobileMenuOpen(false);
+                                        }}
+                                        className="cursor-pointer block px-4 py-2 text-sm font-medium rounded-md hover:bg-red-100 text-red-600 transition-colors"
+                                    >
+                                        Log out
+                                    </div>
+                                ) : (
+                                    <>
+                                        <MobileNavLink href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                                            Sign In
+                                        </MobileNavLink>
+                                        <MobileNavLink href="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+                                            Sign Up
+                                        </MobileNavLink>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </motion.div>
                 )}
