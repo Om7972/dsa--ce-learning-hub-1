@@ -1,0 +1,15 @@
+{
+  "sql.dialect": "PostgreSQL",
+  "[sql]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "sqltools.connections": [
+    {
+      "name": "Supabase",
+      "driver": "Supabase",
+      "group": "Supabase",
+      "previewLimit": 50
+    }
+  ]
+}

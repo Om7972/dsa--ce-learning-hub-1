@@ -1,0 +1,30 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "ossp",
+    "upvotes",
+    "plpgsql",
+    "Supabase",
+    "signup",
+    "jsonb",
+    "uuid",
+    "cascades",
+    "enum",
+    "postgresql",
+    "definer",
+    "onboarded",
+    "onboarding",
+    "learninggoals",
+    "skillevel",
+    "timescommitment",
+    "dailycommitment"
+  ],
+  "ignorePaths": [
+    "node_modules",
+    ".next",
+    "dist",
+    "build",
+    ".git"
+  ]
+}

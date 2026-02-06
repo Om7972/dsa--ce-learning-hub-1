@@ -50,6 +50,14 @@ export interface Database {
                     phone: string | null;
                     avatar_url: string | null;
                     created_at: string;
+                    onboarded: boolean;
+                    learning_goals: string[];
+                    skill_level: string | null;
+                    interests: string[];
+                    daily_time_commitment: string | null;
+                    preferred_language: string;
+                    onboarding_completed_at: string | null;
+                    onboarding_step: number;
                 };
                 Insert: {
                     id: string; // uuid
@@ -61,6 +69,14 @@ export interface Database {
                     phone?: string | null;
                     avatar_url?: string | null;
                     created_at?: string;
+                    onboarded?: boolean;
+                    learning_goals?: string[];
+                    skill_level?: string | null;
+                    interests?: string[];
+                    daily_time_commitment?: string | null;
+                    preferred_language?: string;
+                    onboarding_completed_at?: string | null;
+                    onboarding_step?: number;
                 };
                 Update: {
                     id?: string; // uuid
@@ -72,6 +88,14 @@ export interface Database {
                     phone?: string | null;
                     avatar_url?: string | null;
                     created_at?: string;
+                    onboarded?: boolean;
+                    learning_goals?: string[];
+                    skill_level?: string | null;
+                    interests?: string[];
+                    daily_time_commitment?: string | null;
+                    preferred_language?: string;
+                    onboarding_completed_at?: string | null;
+                    onboarding_step?: number;
                 };
             };
             learning_paths: {

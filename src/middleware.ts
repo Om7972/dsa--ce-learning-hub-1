@@ -57,6 +57,25 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
+    // Onboarding check: redirect first-time users to onboarding page
+    if (user && !pathname.startsWith('/onboarding') && !isPublicRoute && pathname !== '/api/onboarding') {
+        try {
+            const { data: userData, error } = await supabase
+                .from('users')
+                .select('onboarded')
+                .eq('id', user.id)
+                .single();
+
+            if (!error && userData && !userData.onboarded) {
+                // User hasn't completed onboarding, redirect to onboarding page
+                return NextResponse.redirect(new URL('/onboarding', request.url));
+            }
+        } catch (error) {
+            console.error('Error checking onboarding status:', error);
+            // Continue with request if there's an error
+        }
+    }
+
     // Role-based access control for admin routes
     if (pathname.startsWith('/admin')) {
         if (!user) {
