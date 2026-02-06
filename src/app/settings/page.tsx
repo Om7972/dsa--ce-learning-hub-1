@@ -38,6 +38,13 @@ export default function SettingsPage() {
     const [phone, setPhone] = useState('');
     const [bio, setBio] = useState('');
     const [userId, setUserId] = useState('');
+    const [avatarUrl, setAvatarUrl] = useState('');
+
+    // New Fields
+    const [website, setWebsite] = useState('');
+    const [github, setGithub] = useState('');
+    const [linkedin, setLinkedin] = useState('');
+    const [skills, setSkills] = useState(''); // Comma separated
 
     const supabase = createSupabaseBrowserClient();
 
@@ -50,39 +57,93 @@ export default function SettingsPage() {
                 setUserId(user.id);
                 setEmail(user.email || '');
 
-                const { data: profile } = await supabase
+                const { data: profile, error } = await supabase
                     .from('users')
                     .select('*')
                     .eq('id', user.id)
                     .single();
 
+                if (error && error.code !== 'PGRST116') {
+                    console.error("Error fetching profile:", error);
+                    return;
+                }
+
                 if (profile) {
                     const names = (profile.full_name || '').split(' ');
-                    setFirstName(names[0] || '');
-                    setLastName(names.slice(1).join(' ') || '');
+                    setFirstName(names[0] || user.user_metadata?.full_name?.split(' ')[0] || '');
+                    setLastName(names.slice(1).join(' ') || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '');
                     setPhone(profile.phone || '');
                     setBio(profile.bio || '');
+                    setAvatarUrl(profile.avatar_url || '');
+
+                    setWebsite(profile.website_url || '');
+                    setGithub(profile.github_url || '');
+                    setLinkedin(profile.linkedin_url || '');
+                    setSkills(profile.skills ? profile.skills.join(', ') : '');
                 }
             } catch (error) {
-                console.error("Error fetching profile:", error);
+                console.error("Unexpected error:", error);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchProfile();
-    }, []);
+    }, [supabase]);
+
+    const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        try {
+            if (!event.target.files || event.target.files.length === 0) return;
+            const file = event.target.files[0];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${userId}-${Date.now()}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            setUpdating(true);
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            // Update user profile
+            const { error: updateError } = await supabase
+                .from('users')
+                .update({ avatar_url: publicUrl })
+                .eq('id', userId);
+
+            if (updateError) throw updateError;
+
+            setAvatarUrl(publicUrl);
+            toast.success("Avatar updated!");
+        } catch (error: any) {
+            console.error("Error uploading avatar:", error);
+            toast.error("Error uploading avatar: " + (error.message || "Unknown error"));
+        } finally {
+            setUpdating(false);
+        }
+    };
 
     const handleSaveProfile = async () => {
         setUpdating(true);
         try {
             const fullName = `${firstName} ${lastName}`.trim();
+            const skillsArray = skills.split(',').map(s => s.trim()).filter(s => s);
+
             const { error } = await supabase
                 .from('users')
                 .update({
                     full_name: fullName,
                     phone,
-                    bio
+                    bio,
+                    website_url: website,
+                    github_url: github,
+                    linkedin_url: linkedin,
+                    skills: skillsArray
                 })
                 .eq('id', userId);
 
@@ -90,7 +151,7 @@ export default function SettingsPage() {
             toast.success("Profile updated successfully!");
         } catch (error: any) {
             console.error("Error updating profile:", error);
-            toast.error("Failed to update profile.");
+            toast.error("Failed to update profile: " + (error.message || "Check console"));
         } finally {
             setUpdating(false);
         }
@@ -105,7 +166,7 @@ export default function SettingsPage() {
     });
 
     if (loading) {
-        return <div className="p-8 text-center text-muted-foreground">Loading settings...</div>;
+        return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading settings...</div>;
     }
 
     return (
@@ -155,73 +216,161 @@ export default function SettingsPage() {
                         <Card>
                             <CardHeader>
                                 <CardTitle>Profile Information</CardTitle>
-                                <CardDescription>Update your personal details</CardDescription>
+                                <CardDescription>Update your personal details and public profile.</CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-6">
+                            <CardContent className="space-y-8">
                                 {/* Avatar */}
-                                <div className="flex items-center gap-4">
-                                    <Avatar className="h-20 w-20">
-                                        <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${firstName}`} />
+                                <div className="flex flex-col sm:flex-row items-center gap-6">
+                                    <Avatar className="h-24 w-24 border-2 border-primary/20">
+                                        <AvatarImage src={avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${firstName}`} />
                                         <AvatarFallback>{firstName[0]}</AvatarFallback>
                                     </Avatar>
-                                    <div className="space-y-2">
-                                        <Button variant="outline" size="sm">Change Avatar</Button>
+                                    <div className="space-y-2 text-center sm:text-left">
+                                        <div className="flex items-center gap-2">
+                                            <Button variant="outline" size="sm" className="relative cursor-pointer overflow-hidden">
+                                                <input
+                                                    type="file"
+                                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                                    accept="image/*"
+                                                    onChange={handleAvatarUpload}
+                                                    disabled={updating}
+                                                />
+                                                {updating ? 'Uploading...' : 'Change Avatar'}
+                                            </Button>
+                                            {avatarUrl && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-destructive hover:text-destructive"
+                                                    onClick={() => setAvatarUrl('')}
+                                                >
+                                                    Remove
+                                                </Button>
+                                            )}
+                                        </div>
                                         <p className="text-xs text-muted-foreground">
                                             JPG, PNG or GIF. Max size 2MB.
                                         </p>
                                     </div>
                                 </div>
 
-                                {/* Form Fields */}
-                                <div className="grid gap-4 md:grid-cols-2">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="firstName">First Name</Label>
-                                        <Input
-                                            id="firstName"
-                                            value={firstName}
-                                            onChange={(e) => setFirstName(e.target.value)}
-                                        />
+                                <div className="grid gap-6">
+                                    {/* Personal Info */}
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="firstName">First Name</Label>
+                                            <Input
+                                                id="firstName"
+                                                value={firstName}
+                                                onChange={(e) => setFirstName(e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="lastName">Last Name</Label>
+                                            <Input
+                                                id="lastName"
+                                                value={lastName}
+                                                onChange={(e) => setLastName(e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="email">Email</Label>
+                                            <Input
+                                                id="email"
+                                                value={email}
+                                                disabled
+                                                className="bg-muted text-muted-foreground"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="phone">Phone</Label>
+                                            <Input
+                                                id="phone"
+                                                value={phone}
+                                                placeholder="+1 234 567 890"
+                                                onChange={(e) => setPhone(e.target.value)}
+                                            />
+                                        </div>
                                     </div>
+
+                                    {/* Bio */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="lastName">Last Name</Label>
-                                        <Input
-                                            id="lastName"
-                                            value={lastName}
-                                            onChange={(e) => setLastName(e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="email">Email</Label>
-                                        <Input
-                                            id="email"
-                                            type="email"
-                                            value={email}
-                                            disabled
-                                            className="bg-muted text-muted-foreground"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="phone">Phone</Label>
-                                        <Input
-                                            id="phone"
-                                            value={phone}
-                                            onChange={(e) => setPhone(e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="space-y-2 md:col-span-2">
                                         <Label htmlFor="bio">Bio</Label>
                                         <Input
                                             id="bio"
                                             value={bio}
+                                            placeholder="Tell us a little about yourself"
                                             onChange={(e) => setBio(e.target.value)}
                                         />
                                     </div>
+
+                                    {/* Skills */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="skills">Skills</Label>
+                                        <Input
+                                            id="skills"
+                                            value={skills}
+                                            placeholder="React, Java, System Design (comma separated)"
+                                            onChange={(e) => setSkills(e.target.value)}
+                                        />
+                                        <p className="text-xs text-muted-foreground">
+                                            Separate skills with commas.
+                                        </p>
+                                    </div>
+
+                                    {/* Social Links */}
+                                    <div className="space-y-4 pt-2">
+                                        <h3 className="font-semibold text-sm">Social Profiles</h3>
+                                        <div className="grid gap-4 md:grid-cols-3">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="website">Website</Label>
+                                                <div className="relative">
+                                                    <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                    <Input
+                                                        id="website"
+                                                        value={website}
+                                                        placeholder="https://your-site.com"
+                                                        className="pl-9"
+                                                        onChange={(e) => setWebsite(e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="github">GitHub</Label>
+                                                <div className="relative">
+                                                    <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                    <Input
+                                                        id="github"
+                                                        value={github}
+                                                        placeholder="https://github.com/..."
+                                                        className="pl-9"
+                                                        onChange={(e) => setGithub(e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="linkedin">LinkedIn</Label>
+                                                <div className="relative">
+                                                    <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                    <Input
+                                                        id="linkedin"
+                                                        value={linkedin}
+                                                        placeholder="https://linkedin.com/in/..."
+                                                        className="pl-9"
+                                                        onChange={(e) => setLinkedin(e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <Button onClick={handleSaveProfile} disabled={updating}>
-                                    <Save className="mr-2 h-4 w-4" />
-                                    {updating ? 'Saving...' : 'Save Changes'}
-                                </Button>
+                                <div className="flex justify-end pt-4">
+                                    <Button onClick={handleSaveProfile} disabled={updating} className="min-w-[120px]">
+                                        <Save className="mr-2 h-4 w-4" />
+                                        {updating ? 'Saving...' : 'Save Changes'}
+                                    </Button>
+                                </div>
                             </CardContent>
                         </Card>
                     </TabsContent>

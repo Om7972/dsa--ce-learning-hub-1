@@ -27,10 +27,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+import Link from 'next/link';
+
 export default function ProfilePage() {
     const { user } = useAuth();
     const [profile, setProfile] = useState<any>(null);
     const [userStats, setUserStats] = useState<any>(null);
+    const [activities, setActivities] = useState<any[]>([]);
+    const [badges, setBadges] = useState<any[]>([]);
+
     const supabase = createSupabaseBrowserClient();
 
     useEffect(() => {
@@ -47,14 +52,43 @@ export default function ProfilePage() {
 
                 if (profileData) setProfile(profileData);
 
-                // Fetch stats
-                const { data: statsData } = await supabase
+                // Fetch stats with robust handling
+                const { data: statsData, error: statsError } = await supabase
                     .from('user_stats')
                     .select('*')
                     .eq('user_id', user.id)
                     .single();
 
-                if (statsData) setUserStats(statsData);
+                if (statsData) {
+                    setUserStats(statsData);
+                } else if (statsError && statsError.code === 'PGRST116') {
+                    // Auto-create stats if missing
+                    const { data: newStats } = await supabase
+                        .from('user_stats')
+                        .insert({ user_id: user.id })
+                        .select()
+                        .single();
+
+                    if (newStats) setUserStats(newStats);
+                }
+
+                // Fetch Activity
+                const { data: activityData } = await supabase
+                    .from('user_activity_log')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('activity_date', { ascending: false })
+                    .limit(5);
+
+                if (activityData) setActivities(activityData);
+
+                // Fetch Badges
+                const { data: badgeData } = await supabase
+                    .from('user_achievements')
+                    .select('*, achievements(*)')
+                    .eq('user_id', user.id);
+
+                if (badgeData) setBadges(badgeData);
             } catch (error) {
                 console.error("Error fetching profile data:", error);
             }
@@ -71,27 +105,37 @@ export default function ProfilePage() {
         username: profile?.full_name?.toLowerCase().replace(/\s+/g, '_') || 'coder_one',
         joinDate: user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'January 2026',
         location: profile?.college || 'Mumbai, India',
-        bio: profile?.bio || 'Computer Engineering student passionate about Algorithms and System Design. Currently learning Graph Theory.',
+        bio: profile?.bio || 'Computer Engineering student passionate about Algorithms and System Design.',
         role: profile?.role || 'Student',
-        level: userStats ? Math.floor(userStats.total_xp / 1000) + 1 : 12,
-        xp: userStats?.total_xp || 12500,
-        nextLevelXp: userStats ? (Math.floor(userStats.total_xp / 1000) + 1) * 1000 : 15000,
-        streak: userStats?.current_streak || 7
+        level: userStats ? Math.floor(userStats.total_xp / 1000) + 1 : 1,
+        xp: userStats?.total_xp || 0,
+        nextLevelXp: userStats ? (Math.floor(userStats.total_xp / 1000) + 1) * 1000 : 1000,
+        streak: userStats?.current_streak || 0,
+        skills: profile?.skills || [],
+        website: profile?.website_url,
+        github: profile?.github_url,
+        linkedin: profile?.linkedin_url
     };
 
     const stats = [
-        { label: 'Global Rank', value: '#1,234', icon: Trophy, color: 'text-yellow-500' },
+        { label: 'Global Rank', value: '#N/A', icon: Trophy, color: 'text-yellow-500' },
         { label: 'Problems Solved', value: userStats?.problems_solved?.toString() || '0', icon: Code, color: 'text-blue-500' },
         { label: 'Current Streak', value: `${userStats?.current_streak || 0} Days`, icon: Flame, color: 'text-orange-500' },
         { label: 'Reputation', value: userStats?.total_xp?.toString() || '0', icon: Star, color: 'text-purple-500' },
     ];
 
     const RecentActivity = [
-        { action: 'Solved "Two Sum"', time: '2 hours ago', xp: '+50 XP' },
-        { action: 'Completed "Arrays" Module', time: '1 day ago', xp: '+200 XP' },
-        { action: 'Earned "Week Warrior" Badge', time: '2 days ago', xp: '+100 XP' },
-        { action: 'Started "Graph Theory"', time: '3 days ago', xp: '' },
+        { action: 'Joined the platform', time: userData.joinDate, xp: '+10 XP' },
+        // ... we can fetch real activity later
     ];
+
+    const handleShare = () => {
+        navigator.clipboard.writeText(window.location.href);
+        // We could assume toast is available via Toaster, but simple confirm is ok
+        // toast.success("Link copied!"); 
+        // Since toast isn't imported here, we'll skip the toast call to avoid errors or import it if easy.
+        // It's not imported. I'll skip it.
+    };
 
     return (
         <div className="space-y-8 max-w-6xl mx-auto">
@@ -125,8 +169,10 @@ export default function ProfilePage() {
                                         <p className="text-muted-foreground">@{userData.username}</p>
                                     </div>
                                     <div className="flex gap-2">
-                                        <Button>Edit Profile</Button>
-                                        <Button variant="outline" size="icon">
+                                        <Button asChild>
+                                            <Link href="/settings">Edit Profile</Link>
+                                        </Button>
+                                        <Button variant="outline" size="icon" onClick={handleShare} title="Copy Profile Link">
                                             <LinkIcon className="h-4 w-4" />
                                         </Button>
                                     </div>
@@ -149,6 +195,24 @@ export default function ProfilePage() {
                                         <Mail className="h-4 w-4" />
                                         {userData.email}
                                     </div>
+                                    {userData.website && (
+                                        <a href={userData.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-primary">
+                                            <LinkIcon className="h-4 w-4" />
+                                            Website
+                                        </a>
+                                    )}
+                                    {userData.github && (
+                                        <a href={userData.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-primary">
+                                            <Github className="h-4 w-4" />
+                                            GitHub
+                                        </a>
+                                    )}
+                                    {userData.linkedin && (
+                                        <a href={userData.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-primary">
+                                            <Linkedin className="h-4 w-4" />
+                                            LinkedIn
+                                        </a>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -197,9 +261,13 @@ export default function ProfilePage() {
                         </CardHeader>
                         <CardContent>
                             <div className="flex flex-wrap gap-2">
-                                {['C++', 'Java', 'Python', 'React', 'Algorithms', 'Data Structures', 'System Design'].map((skill) => (
-                                    <Badge key={skill} variant="secondary">{skill}</Badge>
-                                ))}
+                                {userData.skills && userData.skills.length > 0 ? (
+                                    userData.skills.map((skill: string) => (
+                                        <Badge key={skill} variant="secondary">{skill}</Badge>
+                                    ))
+                                ) : (
+                                    <p className="text-muted-foreground text-sm">Add skills in settings</p>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
@@ -227,20 +295,25 @@ export default function ProfilePage() {
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-6">
-                                        {RecentActivity.map((item, i) => (
-                                            <div key={i} className="flex items-center gap-4 pb-4 border-b last:border-0 last:pb-0">
-                                                <div className="h-2 w-2 rounded-full bg-primary mt-1.5" />
-                                                <div className="flex-1">
-                                                    <p className="font-medium">{item.action}</p>
-                                                    <p className="text-sm text-muted-foreground">{item.time}</p>
+                                        {activities && activities.length > 0 ? (
+                                            activities.map((item, i) => (
+                                                <div key={i} className="flex items-center gap-4 pb-4 border-b last:border-0 last:pb-0">
+                                                    <div className="h-2 w-2 rounded-full bg-primary mt-1.5" />
+                                                    <div className="flex-1">
+                                                        <p className="font-medium">{item.activity_type.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}</p>
+                                                        <p className="text-sm text-muted-foreground">{new Date(item.activity_date).toLocaleDateString()}</p>
+                                                    </div>
+                                                    {item.count && item.count > 1 && (
+                                                        <Badge variant="secondary">x{item.count}</Badge>
+                                                    )}
                                                 </div>
-                                                {item.xp && (
-                                                    <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">
-                                                        {item.xp}
-                                                    </Badge>
-                                                )}
+                                            ))
+                                        ) : (
+                                            <div className="text-center py-6 text-muted-foreground">
+                                                <p>No recent activity.</p>
+                                                <p className="text-sm">Start solving problems to build your history!</p>
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -250,15 +323,22 @@ export default function ProfilePage() {
                             <Card>
                                 <CardContent className="pt-6">
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                        {[1, 2, 3, 4].map((i) => (
-                                            <div key={i} className="text-center p-4 border rounded-xl hover:bg-muted/50 transition-colors">
-                                                <div className="w-16 h-16 mx-auto bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-full flex items-center justify-center mb-3">
-                                                    <Trophy className="h-8 w-8 text-yellow-600" />
+                                        {badges && badges.length > 0 ? (
+                                            badges.map((badge, i) => (
+                                                <div key={i} className="text-center p-4 border rounded-xl hover:bg-muted/50 transition-colors">
+                                                    <div className="w-16 h-16 mx-auto bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-full flex items-center justify-center mb-3">
+                                                        <Trophy className="h-8 w-8 text-yellow-600" />
+                                                    </div>
+                                                    <p className="font-semibold text-sm">{badge.achievements?.title || 'Achievement'}</p>
+                                                    <p className="text-xs text-muted-foreground">Unlocked {new Date(badge.unlocked_at).toLocaleDateString()}</p>
                                                 </div>
-                                                <p className="font-semibold text-sm">Achievement {i}</p>
-                                                <p className="text-xs text-muted-foreground">Unlocked</p>
+                                            ))
+                                        ) : (
+                                            <div className="col-span-full text-center py-6 text-muted-foreground">
+                                                <p>No badges earned yet.</p>
+                                                <p className="text-sm">Keep solving problems to unlock achievements!</p>
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>
