@@ -22,6 +22,15 @@ import {
   Target,
   TrendingUp
 } from "lucide-react";
+import WhyChoose from '@/components/landing/WhyChoose'
+import Personalization from '@/components/landing/Personalization'
+import Testimonials from '@/components/landing/Testimonials'
+import Stats from '@/components/landing/Stats'
+import Pricing from '@/components/landing/Pricing'
+import FAQ from '@/components/landing/FAQ'
+import FinalCTA from '@/components/landing/FinalCTA'
+
+// Note: keep metadata in a server component (app/layout.tsx or a separate server file)
 
 const containerVariants: any = {
   hidden: { opacity: 0 },
@@ -179,13 +188,13 @@ export default function LandingPage() {
               {/* CTA Buttons */}
               <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
                 <Link href="/dashboard">
-                  <Button size="lg" className="h-14 px-8 text-lg font-bold bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 text-white rounded-full shadow-lg shadow-primary/50 group" suppressHydrationWarning>
+                  <Button suppressHydrationWarning size="lg" className="h-14 px-8 text-lg font-bold bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 text-white rounded-full shadow-lg shadow-primary/50 group">
                     Start Learning Free
                     <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
                 <Link href="#features">
-                  <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full border-2" suppressHydrationWarning>
+                  <Button suppressHydrationWarning size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full border-2">
                     Explore Features
                   </Button>
                 </Link>
@@ -309,6 +318,14 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Extra Landing Sections: personalization, testimonials, stats, pricing, faq */}
+        <WhyChoose />
+        <Personalization />
+        <Testimonials />
+        <Stats />
+        <Pricing />
+        <FAQ />
+
         {/* CTA Section */}
         <section className="py-24 bg-gradient-to-br from-primary/10 via-purple-500/10 to-background relative overflow-hidden">
           <div className="absolute inset-0 bg-grid-white/10" />
@@ -326,7 +343,7 @@ export default function LandingPage() {
                 Join thousands of students who are already mastering DSA and acing their placements.
               </p>
               <Link href="/dashboard">
-                <Button size="lg" className="h-14 px-8 text-lg font-bold bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 text-white rounded-full shadow-lg shadow-primary/50" suppressHydrationWarning>
+                <Button suppressHydrationWarning size="lg" className="h-14 px-8 text-lg font-bold bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 text-white rounded-full shadow-lg shadow-primary/50">
                   Start Your Journey Today
                   <Rocket className="ml-2 h-5 w-5" />
                 </Button>
