@@ -6,7 +6,7 @@ import {
   calculateStudySchedule,
   getOnboardingCompletionMessage,
 } from '@/lib/onboarding-utils';
-import type { OnboardingData, LearningGoal, DSATopic, CESubject, TimeCommitment } from '@/lib/onboarding-constants';
+import type { OnboardingData, LearningGoal, DSATopic, CESubject, TimeCommitment, SkillLevel } from '@/lib/onboarding-constants';
 
 describe('Onboarding Utilities', () => {
   const validData: OnboardingData = {
@@ -102,13 +102,13 @@ describe('Onboarding Utilities', () => {
     });
 
     it('should adjust duration for beginner level', () => {
-      const data = { ...validData, skillLevel: 'beginner', learningGoals: ['gate'] as LearningGoal[] };
+      const data = { ...validData, skillLevel: 'beginner' as SkillLevel, learningGoals: ['gate'] as LearningGoal[] };
       const rec = generatePersonalizedRecommendations(data);
       expect(rec.estimatedDuration).toContain('8 months');
     });
 
     it('should adjust duration for advanced level', () => {
-      const data = { ...validData, skillLevel: 'advanced', learningGoals: ['gate'] as LearningGoal[] };
+      const data = { ...validData, skillLevel: 'advanced' as SkillLevel, learningGoals: ['gate'] as LearningGoal[] };
       const rec = generatePersonalizedRecommendations(data);
       expect(rec.estimatedDuration).toContain('6 months');
     });
