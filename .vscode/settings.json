@@ -11,5 +11,9 @@
       "group": "Supabase",
       "previewLimit": 50
     }
+  ],
+  "graalvm.home": "",
+  "graalvm.installations": [
+    ""
   ]
 }

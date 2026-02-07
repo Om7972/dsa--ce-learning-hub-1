@@ -5,23 +5,7 @@ import Link from "next/link";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/layout/footer";
-import {
-  Code2,
-  BookOpen,
-  Trophy,
-  Users,
-  Brain,
-  Rocket,
-  ChevronRight,
-  Terminal,
-  Activity,
-  CheckCircle2,
-  Zap,
-  Shield,
-  Sparkles,
-  Target,
-  TrendingUp
-} from "lucide-react";
+import { Code2, BookOpen, Trophy, Users, Brain, Rocket, Sparkles, Terminal, Activity, Shield, Zap, ChevronRight, CheckCircle2, Target, TrendingUp } from "lucide-react";
 import WhyChoose from '@/components/landing/WhyChoose'
 import Personalization from '@/components/landing/Personalization'
 import Testimonials from '@/components/landing/Testimonials'
@@ -325,32 +309,7 @@ export default function LandingPage() {
         <Stats />
         <Pricing />
         <FAQ />
-
-        {/* CTA Section */}
-        <section className="py-24 bg-gradient-to-br from-primary/10 via-purple-500/10 to-background relative overflow-hidden">
-          <div className="absolute inset-0 bg-grid-white/10" />
-          <div className="container mx-auto px-6 relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="max-w-4xl mx-auto text-center"
-            >
-              <h2 className="text-4xl md:text-6xl font-bold mb-6">
-                Ready to <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">level up</span>?
-              </h2>
-              <p className="text-xl text-muted-foreground mb-8">
-                Join thousands of students who are already mastering DSA and acing their placements.
-              </p>
-              <Link href="/dashboard">
-                <Button suppressHydrationWarning size="lg" className="h-14 px-8 text-lg font-bold bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 text-white rounded-full shadow-lg shadow-primary/50">
-                  Start Your Journey Today
-                  <Rocket className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-            </motion.div>
-          </div>
-        </section>
+        <FinalCTA />
       </main>
 
       <Footer />
