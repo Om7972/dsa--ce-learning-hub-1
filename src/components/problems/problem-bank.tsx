@@ -393,8 +393,8 @@ export const ProblemBank = () => {
                         <Alert>
                           <AlertTitle>Solution Template</AlertTitle>
                           <AlertDescription>
-                            <pre className="mt-2 p-4 bg-muted rounded-md overflow-x-auto text-sm">
-                              {problem.solutionTemplate || "// No template available"}
+                              <pre className="mt-2 p-4 bg-muted rounded-md overflow-x-auto text-sm">
+                              {(problem as any).solutionTemplate || "// No template available"}
                             </pre>
                           </AlertDescription>
                         </Alert>
@@ -410,11 +410,11 @@ export const ProblemBank = () => {
                               {problemStatuses.get(problem.id)?.submissions.map((sub) => (
                                 <div key={sub.id} className="flex items-center justify-between p-3 border rounded-lg">
                                   <div className="flex items-center gap-2">
-                                    {statusConfig[sub.status] && React.createElement(statusConfig[sub.status].icon, {
-                                      className: `w-4 h-4 ${statusConfig[sub.status].color}`
+                                    {statusConfig[sub.status as keyof typeof statusConfig] && React.createElement(statusConfig[sub.status as keyof typeof statusConfig].icon, {
+                                      className: `w-4 h-4 ${statusConfig[sub.status as keyof typeof statusConfig].color}`
                                     })}
-                                    <span className={statusConfig[sub.status]?.color || ""}>
-                                      {statusConfig[sub.status]?.label || sub.status}
+                                    <span className={statusConfig[sub.status as keyof typeof statusConfig]?.color || ""}>
+                                      {statusConfig[sub.status as keyof typeof statusConfig]?.label || sub.status}
                                     </span>
                                   </div>
                                   <span className="text-xs text-muted-foreground">

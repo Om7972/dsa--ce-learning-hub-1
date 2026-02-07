@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
                 submission_code: code,
                 mistake_pattern: analysis.mistakePattern,
                 feedback: analysis.feedback
-            });
+            } as any);
 
             if (error) {
                 console.error("Error saving mistake history:", error);

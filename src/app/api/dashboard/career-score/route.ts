@@ -15,11 +15,11 @@ export async function GET(req: NextRequest) {
 
     let dsaScore = 0;
     if (stats) {
-        dsaScore = Math.min(stats.problems_solved * 2, 40); // Max 40 points for 20 problems
+        dsaScore = Math.min((stats as any).problems_solved * 2, 40); // Max 40 points for 20 problems
     }
 
     // 2. Consistency Bonus
-    const consistency = stats ? Math.min(stats.current_streak * 2, 10) : 0; // Max 10 points
+    const consistency = stats ? Math.min((stats as any).current_streak * 2, 10) : 0; // Max 10 points
 
     // 3. Mock data for others
     const devScore = 20; // assumed

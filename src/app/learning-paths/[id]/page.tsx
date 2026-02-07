@@ -31,7 +31,7 @@ async function getLearningPathDetails(id: string): Promise<LearningPathWithLesso
         console.error('Error fetching lessons:', lessonsError);
     }
 
-    return { ...pathData, lessons: lessonsData || [] };
+    return { ...(pathData as any), lessons: (lessonsData as any) || [] };
 }
 
 export default async function LearningPathDetailPage({ params }: { params: { id: string } }) {

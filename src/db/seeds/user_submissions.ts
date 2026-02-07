@@ -50,7 +50,7 @@ async function main() {
         },
     ];
 
-    await db.insert(userSubmissions).values(sampleUserSubmissions);
+    await db.insert(userSubmissions).values(sampleUserSubmissions as any);
 
     console.log('✅ User Submissions seeder completed successfully');
 }

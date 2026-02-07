@@ -41,7 +41,7 @@ export async function checkAchievements(userId: string, eventType: 'problem_solv
             .eq('user_id', userId)
             .single();
 
-        if (stats && stats.current_streak >= 7) {
+        if (stats && (stats as any).current_streak >= 7) {
             await unlockAchievement(userId, '7-Day Streak');
         }
     }
@@ -62,14 +62,14 @@ async function unlockAchievement(userId: string, achievementTitle: string) {
         .from('user_achievements')
         .select('id')
         .eq('user_id', userId)
-        .eq('achievement_id', achievement.id)
+        .eq('achievement_id', (achievement as any).id)
         .single();
 
     if (existing) return;
 
-    // Unlock
+    // Unlock - cast payloads/ids to any to avoid narrow typing
     await supabase.from('user_achievements').insert({
         user_id: userId,
-        achievement_id: achievement.id
-    });
+        achievement_id: (achievement as any).id
+    } as any);
 }

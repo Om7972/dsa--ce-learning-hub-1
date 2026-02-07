@@ -11,7 +11,10 @@ export async function GET(req: NextRequest) {
     let rating = 1000;
     if (user) {
         const { data: metrics } = await supabase.from('user_performance_metrics').select('current_rating').eq('user_id', user.id).single();
-        if (metrics) rating = metrics.current_rating;
+        // supabase typing can be narrow; safely access via any guard
+        if (metrics && typeof (metrics as any).current_rating === 'number') {
+            rating = (metrics as any).current_rating;
+        }
     }
 
     // 2. Recommend based on rating

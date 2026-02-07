@@ -118,9 +118,9 @@ export function TopNav() {
                         <NavigationMenu>
                             <NavigationMenuList>
                                 <NavigationMenuItem>
-                                    <NavigationMenuTrigger className="bg-transparent hover:bg-accent/50">Platform</NavigationMenuTrigger>
+                                    <NavigationMenuTrigger suppressHydrationWarning className="bg-transparent hover:bg-accent/50">Platform</NavigationMenuTrigger>
                                     <NavigationMenuContent>
-                                        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                                        <div className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                                             <ListItem href="/dashboard" title="Dashboard" icon={<LayoutDashboard className="h-4 w-4" />}>
                                                 Your personal learning center and progress tracking.
                                             </ListItem>
@@ -139,14 +139,14 @@ export function TopNav() {
                                             <ListItem href="/ai-tutor" title="AI Tutor" icon={<Sparkles className="h-4 w-4" />}>
                                                 Get instant help from our AI assistant.
                                             </ListItem>
-                                        </ul>
+                                        </div>
                                     </NavigationMenuContent>
                                 </NavigationMenuItem>
 
                                 <NavigationMenuItem>
-                                    <NavigationMenuTrigger className="bg-transparent hover:bg-accent/50">Resources</NavigationMenuTrigger>
+                                    <NavigationMenuTrigger suppressHydrationWarning className="bg-transparent hover:bg-accent/50">Resources</NavigationMenuTrigger>
                                     <NavigationMenuContent>
-                                        <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                                        <div className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                                             <ListItem href="/blog" title="Engineering Blog" icon={<Newspaper className="h-4 w-4" />}>
                                                 Tech articles, tutorials, and industry insights.
                                             </ListItem>
@@ -162,7 +162,7 @@ export function TopNav() {
                                             <ListItem href="/faq" title="FAQs" icon={<HelpCircle className="h-4 w-4" />}>
                                                 Common questions about the platform.
                                             </ListItem>
-                                        </ul>
+                                        </div>
                                     </NavigationMenuContent>
                                 </NavigationMenuItem>
 
@@ -449,7 +449,7 @@ const ListItem = React.forwardRef<
     React.ComponentPropsWithoutRef<typeof Link> & { title: string; icon: React.ReactNode }
 >(({ className, title, icon, children, href, ...props }, ref) => {
     return (
-        <li>
+        <div>
             <NavigationMenuLink asChild>
                 <Link
                     ref={ref}
@@ -469,7 +469,7 @@ const ListItem = React.forwardRef<
                     </p>
                 </Link>
             </NavigationMenuLink>
-        </li>
+        </div>
     )
 })
 ListItem.displayName = "ListItem"
