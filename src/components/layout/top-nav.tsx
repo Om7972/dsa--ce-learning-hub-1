@@ -120,23 +120,29 @@ export function TopNav() {
                                 <NavigationMenuItem>
                                     <NavigationMenuTrigger suppressHydrationWarning className="bg-transparent hover:bg-accent/50">Platform</NavigationMenuTrigger>
                                     <NavigationMenuContent>
-                                        <div className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                                            <ListItem href="/dashboard" title="Dashboard" icon={<LayoutDashboard className="h-4 w-4" />}>
+                                        <div className="grid w-[520px] gap-4 p-5 md:w-[620px] md:grid-cols-2 lg:w-[720px]">
+                                            <ListItem href="/dashboard" title="Dashboard" icon={<LayoutDashboard className="h-5 w-5" />}>
                                                 Your personal learning center and progress tracking.
                                             </ListItem>
-                                            <ListItem href="/curriculum" title="Curriculum" icon={<BookOpen className="h-4 w-4" />}>
+                                            <ListItem href="/curriculum" title="Curriculum" icon={<BookOpen className="h-5 w-5" />}>
                                                 Comprehensive structured learning paths.
                                             </ListItem>
-                                            <ListItem href="/visualizer" title="DSA Visualizer" icon={<Eye className="h-4 w-4" />}>
+                                            <ListItem href="/visualizer" title="DSA Visualizer" icon={<Eye className="h-5 w-5" />}>
                                                 Interactive algorithm visualizations.
                                             </ListItem>
-                                            <ListItem href="/problems" title="Problem Bank" icon={<List className="h-4 w-4" />}>
+                                            <ListItem href="/problems" title="Problem Bank" icon={<List className="h-5 w-5" />}>
                                                 Practice problems sorted by difficulty and topic.
                                             </ListItem>
-                                            <ListItem href="/roadmaps" title="Career Roadmaps" icon={<Map className="h-4 w-4" />}>
+                                            <ListItem href="/dsa-practice" title="DSA Practice" icon={<Code2 className="h-5 w-5 text-primary" />}>
+                                                Hands-on practice problems and timed challenges.
+                                            </ListItem>
+                                            <ListItem href="/ce-subjects" title="CE Subjects" icon={<BookOpen className="h-5 w-5 text-sky-500" />}>
+                                                Subject-wise curriculum and exam-focused materials.
+                                            </ListItem>
+                                            <ListItem href="/roadmaps" title="Career Roadmaps" icon={<Map className="h-5 w-5" />}>
                                                 Step-by-step guides for different tech roles.
                                             </ListItem>
-                                            <ListItem href="/ai-tutor" title="AI Tutor" icon={<Sparkles className="h-4 w-4" />}>
+                                            <ListItem href="/ai-tutor" title="AI Tutor" icon={<Sparkles className="h-5 w-5" />}>
                                                 Get instant help from our AI assistant.
                                             </ListItem>
                                         </div>
@@ -146,7 +152,7 @@ export function TopNav() {
                                 <NavigationMenuItem>
                                     <NavigationMenuTrigger suppressHydrationWarning className="bg-transparent hover:bg-accent/50">Resources</NavigationMenuTrigger>
                                     <NavigationMenuContent>
-                                        <div className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                                        <div className="grid w-[520px] gap-4 p-5 md:w-[620px] md:grid-cols-2 lg:w-[720px]">
                                             <ListItem href="/blog" title="Engineering Blog" icon={<Newspaper className="h-4 w-4" />}>
                                                 Tech articles, tutorials, and industry insights.
                                             </ListItem>
