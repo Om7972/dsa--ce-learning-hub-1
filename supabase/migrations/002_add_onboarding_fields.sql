@@ -1,13 +1,13 @@
 -- Add onboarding fields to users table
 -- Add columns individually to avoid parser issues
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS onboarded boolean DEFAULT false;
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS learning_goals text[] DEFAULT ARRAY[]::text[];
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS skill_level text DEFAULT NULL;
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS interests text[] DEFAULT ARRAY[]::text[];
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS daily_time_commitment text DEFAULT NULL;
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS preferred_language text DEFAULT 'English';
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS onboarding_completed_at timestamp DEFAULT NULL;
-ALTER TABLE public.users ADD COLUMN IF NOT EXISTS onboarding_step integer DEFAULT 0;
+ALTER TABLE public.users ADD COLUMN onboarded boolean DEFAULT false;
+ALTER TABLE public.users ADD COLUMN learning_goals text[] DEFAULT ARRAY[]::text[];
+ALTER TABLE public.users ADD COLUMN skill_level text DEFAULT NULL;
+ALTER TABLE public.users ADD COLUMN interests text[] DEFAULT ARRAY[]::text[];
+ALTER TABLE public.users ADD COLUMN daily_time_commitment text DEFAULT NULL;
+ALTER TABLE public.users ADD COLUMN preferred_language text DEFAULT 'English';
+ALTER TABLE public.users ADD COLUMN onboarding_completed_at timestamp DEFAULT NULL;
+ALTER TABLE public.users ADD COLUMN onboarding_step integer DEFAULT 0;
 
 -- Add index for onboarding queries
 CREATE INDEX idx_users_onboarded ON public.users(onboarded);
