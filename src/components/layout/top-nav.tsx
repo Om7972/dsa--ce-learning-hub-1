@@ -33,7 +33,8 @@ import {
     Users,
     Clock,
     Brain,
-    Compass
+    Compass,
+    Cpu
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -150,6 +151,9 @@ export function TopNav() {
                                     <NavigationMenuTrigger suppressHydrationWarning className="bg-transparent hover:bg-accent/50">Career & Prep</NavigationMenuTrigger>
                                     <NavigationMenuContent>
                                         <div className="grid w-[520px] gap-4 p-5 md:w-[620px] md:grid-cols-2 lg:w-[720px]">
+                                            <ListItem href="/placement-os" title="Placement OS" icon={<Cpu className="h-5 w-5 text-indigo-500" />}>
+                                                Complete placement suite: tracker, sheets, mock interviews, AI.
+                                            </ListItem>
                                             <ListItem href="/placement" title="Placement Hub" icon={<Briefcase className="h-5 w-5 text-amber-500" />}>
                                                 Company sheets, roadmaps, behavioral mock interviews, ATS scanner.
                                             </ListItem>
@@ -375,6 +379,9 @@ export function TopNav() {
                             </MobileNavLink>
                             <MobileNavLink href="/visualizer" onClick={() => setIsMobileMenuOpen(false)}>
                                 DSA Visualizer
+                            </MobileNavLink>
+                            <MobileNavLink href="/placement-os" onClick={() => setIsMobileMenuOpen(false)}>
+                                Placement OS 🚀
                             </MobileNavLink>
                             <MobileNavLink href="/placement" onClick={() => setIsMobileMenuOpen(false)}>
                                 Placement Hub

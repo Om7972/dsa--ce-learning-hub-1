@@ -1,15 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Cpu,
     Database,
     Network,
     Binary,
     Layers,
-    GitBranch,
-    Shield,
     Workflow,
     BookOpen,
     Video,
@@ -17,8 +15,6 @@ import {
     Code,
     CheckCircle,
     Clock,
-    Star,
-    Users,
     TrendingUp
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +22,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 interface Subject {
     id: string;
@@ -36,9 +34,7 @@ interface Subject {
     color: string;
     semester: number;
     credits: number;
-    progress: number;
     topics: number;
-    completedTopics: number;
     resources: {
         videos: number;
         notes: number;
@@ -57,11 +53,9 @@ const subjects: Subject[] = [
         color: 'from-blue-500 to-cyan-500',
         semester: 3,
         credits: 4,
-        progress: 65,
         topics: 12,
-        completedTopics: 8,
         resources: { videos: 24, notes: 15, assignments: 8 },
-        upcomingExam: '2026-02-15'
+        upcomingExam: '2026-07-15'
     },
     {
         id: '2',
@@ -72,11 +66,9 @@ const subjects: Subject[] = [
         color: 'from-purple-500 to-pink-500',
         semester: 3,
         credits: 4,
-        progress: 45,
         topics: 10,
-        completedTopics: 5,
         resources: { videos: 20, notes: 12, assignments: 6 },
-        upcomingExam: '2026-02-20'
+        upcomingExam: '2026-07-20'
     },
     {
         id: '3',
@@ -87,9 +79,7 @@ const subjects: Subject[] = [
         color: 'from-green-500 to-emerald-500',
         semester: 4,
         credits: 3,
-        progress: 30,
         topics: 14,
-        completedTopics: 4,
         resources: { videos: 28, notes: 18, assignments: 10 }
     },
     {
@@ -101,11 +91,9 @@ const subjects: Subject[] = [
         color: 'from-orange-500 to-red-500',
         semester: 4,
         credits: 4,
-        progress: 55,
         topics: 11,
-        completedTopics: 6,
         resources: { videos: 22, notes: 14, assignments: 7 },
-        upcomingExam: '2026-02-18'
+        upcomingExam: '2026-07-18'
     },
     {
         id: '5',
@@ -116,9 +104,7 @@ const subjects: Subject[] = [
         color: 'from-yellow-500 to-amber-500',
         semester: 5,
         credits: 3,
-        progress: 20,
         topics: 9,
-        completedTopics: 2,
         resources: { videos: 18, notes: 10, assignments: 5 }
     },
     {
@@ -130,29 +116,69 @@ const subjects: Subject[] = [
         color: 'from-indigo-500 to-purple-500',
         semester: 5,
         credits: 3,
-        progress: 40,
         topics: 8,
-        completedTopics: 3,
         resources: { videos: 16, notes: 12, assignments: 4 }
     }
 ];
-
-import { useRouter } from 'next/navigation';
 
 export default function CESubjectsPage() {
     const router = useRouter();
     const [selectedSemester, setSelectedSemester] = useState<number | 'all'>('all');
 
+    // LocalStorage backed interactive states
+    const [progressMap, setProgressMap] = useState<Record<string, number>>({
+        '1': 65,
+        '2': 45,
+        '3': 30,
+        '4': 55,
+        '5': 20,
+        '6': 40
+    });
+    const [xp, setXp] = useState(1200);
+
+    useEffect(() => {
+        const progress = localStorage.getItem('learning-hub:subject-progress');
+        const userXp = localStorage.getItem('learning-hub:xp');
+
+        if (progress) setProgressMap(JSON.parse(progress));
+        if (userXp) setXp(Number(userXp));
+    }, []);
+
+    const handleStudy = (id: string) => {
+        const currentProgress = progressMap[id] || 0;
+        if (currentProgress >= 100) {
+            toast.info("Subject material is fully mastered!");
+            return;
+        }
+
+        const nextProgress = Math.min(100, currentProgress + 10);
+        const newProgress = { ...progressMap, [id]: nextProgress };
+        setProgressMap(newProgress);
+        localStorage.setItem('learning-hub:subject-progress', JSON.stringify(newProgress));
+
+        const updatedXp = xp + 50;
+        setXp(updatedXp);
+        localStorage.setItem('learning-hub:xp', String(updatedXp));
+
+        if (nextProgress === 100) {
+            toast.success("Incredible! Subject coursework completed! +150 XP Bonus");
+            localStorage.setItem('learning-hub:xp', String(updatedXp + 150));
+            setXp(prev => prev + 150);
+        } else {
+            toast.success(`Studied Subject! Coursework increased to ${nextProgress}%. +50 XP`);
+        }
+    };
+
     const filteredSubjects = subjects.filter(subject =>
         selectedSemester === 'all' || subject.semester === selectedSemester
     );
 
-    const totalProgress = subjects.reduce((sum, s) => sum + s.progress, 0) / subjects.length;
-    const totalCompleted = subjects.filter(s => s.progress === 100).length;
-    const totalInProgress = subjects.filter(s => s.progress > 0 && s.progress < 100).length;
+    const totalProgress = subjects.reduce((sum, s) => sum + (progressMap[s.id] || 0), 0) / subjects.length;
+    const totalCompleted = subjects.filter(s => (progressMap[s.id] || 0) === 100).length;
+    const totalInProgress = subjects.filter(s => (progressMap[s.id] || 0) > 0 && (progressMap[s.id] || 0) < 100).length;
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 max-w-7xl mx-auto">
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -161,18 +187,18 @@ export default function CESubjectsPage() {
             >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                        <h1 className="text-4xl font-black bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
                             Computer Engineering Subjects
                         </h1>
                         <p className="text-muted-foreground text-lg">
-                            Master core CE concepts with comprehensive study materials and practice
+                            Master core CE concepts with comprehensive study materials, notes, and tasks.
                         </p>
                     </div>
                     <div className="flex gap-3">
-                        <Button variant="outline" onClick={() => router.push('/ce-subjects/roadmap')}>
-                            <Network className="mr-2 h-4 w-4" /> View Roadmap
+                        <Button variant="outline" onClick={() => router.push('/roadmaps')}>
+                            <Network className="mr-2 h-4 w-4" /> View Roadmaps
                         </Button>
-                        <Button className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700" onClick={() => router.push('/ce-subjects/exam-mode')}>
+                        <Button className="bg-gradient-to-r from-red-650 to-orange-600 hover:from-red-700 hover:to-orange-700 font-bold" onClick={() => router.push('/exam')}>
                             <TrendingUp className="mr-2 h-4 w-4" /> Exam Mode (Beta)
                         </Button>
                     </div>
@@ -180,12 +206,7 @@ export default function CESubjectsPage() {
             </motion.div>
 
             {/* Overall Stats */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="grid gap-4 md:grid-cols-4"
-            >
+            <div className="grid gap-6 md:grid-cols-4">
                 <StatCard
                     icon={BookOpen}
                     label="Total Subjects"
@@ -206,26 +227,104 @@ export default function CESubjectsPage() {
                 />
                 <StatCard
                     icon={TrendingUp}
-                    label="Overall Progress"
+                    label="Overall Completion"
                     value={`${Math.round(totalProgress)}%`}
                     color="text-purple-500"
                 />
-            </motion.div>
+            </div>
 
             {/* Semester Filter */}
-            <Tabs value={String(selectedSemester)} onValueChange={(v) => setSelectedSemester(v === 'all' ? 'all' : Number(v))}>
-                <TabsList>
+            <Tabs value={String(selectedSemester)} onValueChange={(v) => setSelectedSemester(v === 'all' ? 'all' : Number(v))} className="space-y-6">
+                <TabsList className="bg-slate-900 border border-slate-800/80 p-1">
                     <TabsTrigger value="all">All Semesters</TabsTrigger>
                     <TabsTrigger value="3">Semester 3</TabsTrigger>
                     <TabsTrigger value="4">Semester 4</TabsTrigger>
                     <TabsTrigger value="5">Semester 5</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value={String(selectedSemester)} className="space-y-6 mt-6">
+                <TabsContent value={String(selectedSemester)} className="mt-6">
                     <div className="grid gap-6 md:grid-cols-2">
-                        {filteredSubjects.map((subject, index) => (
-                            <SubjectCard key={subject.id} subject={subject} index={index} />
-                        ))}
+                        <AnimatePresence mode="popLayout">
+                            {filteredSubjects.map((subject, index) => {
+                                const currentProgress = progressMap[subject.id] || 0;
+                                const SubjectIcon = subject.icon;
+                                const completedTopics = Math.round(subject.topics * (currentProgress / 100));
+
+                                return (
+                                    <motion.div
+                                        key={subject.id}
+                                        initial={{ opacity: 0, scale: 0.97 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.97 }}
+                                        transition={{ duration: 0.2, delay: index * 0.05 }}
+                                    >
+                                        <Card className="overflow-hidden h-full flex flex-col glass-card hover:border-slate-700/60 transition-all duration-300">
+                                            {/* Gradient Header */}
+                                            <div className={`h-1.5 bg-gradient-to-r ${subject.color}`} />
+
+                                            <CardHeader>
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`p-3 rounded-xl bg-gradient-to-br ${subject.color} shadow-lg shadow-black/20`}>
+                                                            <SubjectIcon className="h-6 w-6 text-white" />
+                                                        </div>
+                                                        <div>
+                                                            <CardTitle className="text-xl font-bold text-slate-100">{subject.title}</CardTitle>
+                                                            <div className="flex items-center gap-2 mt-1.5">
+                                                                <Badge variant="outline" className="border-slate-800 text-slate-400">{subject.code}</Badge>
+                                                                <Badge variant="secondary" className="bg-slate-900 text-slate-300">Sem {subject.semester}</Badge>
+                                                                <Badge variant="secondary" className="bg-slate-900 text-slate-300">{subject.credits} Credits</Badge>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </CardHeader>
+
+                                            <CardContent className="flex-1 flex flex-col justify-between space-y-5">
+                                                <div className="space-y-4">
+                                                    <CardDescription className="text-slate-450 text-sm leading-relaxed">{subject.description}</CardDescription>
+
+                                                    {/* Progress */}
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center justify-between text-xs font-semibold">
+                                                            <span className="text-slate-400">
+                                                                {completedTopics} / {subject.topics} topics mastered
+                                                            </span>
+                                                            <span className="text-primary">{currentProgress}%</span>
+                                                        </div>
+                                                        <Progress value={currentProgress} className="h-2" />
+                                                    </div>
+
+                                                    {/* Resources */}
+                                                    <div className="grid grid-cols-3 gap-3">
+                                                        <div className="flex flex-col items-center p-3 rounded-xl bg-slate-900/60 border border-slate-850">
+                                                            <Video className="h-4.5 w-4.5 text-slate-500 mb-1" />
+                                                            <span className="text-base font-bold text-slate-200">{subject.resources.videos}</span>
+                                                            <span className="text-[10px] text-slate-400">Videos</span>
+                                                        </div>
+                                                        <div className="flex flex-col items-center p-3 rounded-xl bg-slate-900/60 border border-slate-850">
+                                                            <FileText className="h-4.5 w-4.5 text-slate-500 mb-1" />
+                                                            <span className="text-base font-bold text-slate-200">{subject.resources.notes}</span>
+                                                            <span className="text-[10px] text-slate-400">Notes</span>
+                                                        </div>
+                                                        <div className="flex flex-col items-center p-3 rounded-xl bg-slate-900/60 border border-slate-850">
+                                                            <Code className="h-4.5 w-4.5 text-slate-500 mb-1" />
+                                                            <span className="text-base font-bold text-slate-200">{subject.resources.assignments}</span>
+                                                            <span className="text-[10px] text-slate-400">Tasks</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Action Button */}
+                                                <Button className="w-full font-bold text-xs" onClick={() => handleStudy(subject.id)}>
+                                                    Study Coursework
+                                                </Button>
+                                            </CardContent>
+                                        </Card>
+                                    </motion.div>
+                                );
+                            })}
+                        </AnimatePresence>
                     </div>
                 </TabsContent>
             </Tabs>
@@ -235,106 +334,16 @@ export default function CESubjectsPage() {
 
 function StatCard({ icon: Icon, label, value, color }: any) {
     return (
-        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Card>
+        <motion.div whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 200, damping: 15 }}>
+            <Card className="glass-card">
                 <CardContent className="flex items-center gap-4 p-6">
-                    <div className={`p-3 rounded-lg bg-muted ${color}`}>
-                        <Icon className="h-6 w-6" />
+                    <div className={`p-3 rounded-xl bg-slate-900 border border-slate-800 ${color}`}>
+                        <Icon className="h-5.5 w-5.5" />
                     </div>
                     <div>
-                        <p className="text-sm text-muted-foreground">{label}</p>
-                        <p className="text-2xl font-bold">{value}</p>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
+                        <p className="text-2xl font-black text-white mt-1">{value}</p>
                     </div>
-                </CardContent>
-            </Card>
-        </motion.div>
-    );
-}
-
-function SubjectCard({ subject, index }: { subject: Subject; index: number }) {
-    const Icon = subject.icon;
-    const daysUntilExam = subject.upcomingExam
-        ? Math.ceil((new Date(subject.upcomingExam).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-        : null;
-
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            whileHover={{ y: -5 }}
-        >
-            <Card className="overflow-hidden h-full flex flex-col">
-                {/* Gradient Header */}
-                <div className={`h-2 bg-gradient-to-r ${subject.color}`} />
-
-                <CardHeader>
-                    <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className={`p-3 rounded-lg bg-gradient-to-br ${subject.color}`}>
-                                <Icon className="h-6 w-6 text-white" />
-                            </div>
-                            <div>
-                                <CardTitle className="text-xl">{subject.title}</CardTitle>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <Badge variant="outline">{subject.code}</Badge>
-                                    <Badge variant="secondary">Sem {subject.semester}</Badge>
-                                    <Badge variant="secondary">{subject.credits} Credits</Badge>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </CardHeader>
-
-                <CardContent className="flex-1 space-y-4">
-                    <CardDescription>{subject.description}</CardDescription>
-
-                    {/* Progress */}
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">
-                                {subject.completedTopics} / {subject.topics} topics completed
-                            </span>
-                            <span className="font-medium">{subject.progress}%</span>
-                        </div>
-                        <Progress value={subject.progress} className="h-2" />
-                    </div>
-
-                    {/* Resources */}
-                    <div className="grid grid-cols-3 gap-3">
-                        <div className="flex flex-col items-center p-3 rounded-lg bg-muted">
-                            <Video className="h-5 w-5 text-muted-foreground mb-1" />
-                            <span className="text-lg font-bold">{subject.resources.videos}</span>
-                            <span className="text-xs text-muted-foreground">Videos</span>
-                        </div>
-                        <div className="flex flex-col items-center p-3 rounded-lg bg-muted">
-                            <FileText className="h-5 w-5 text-muted-foreground mb-1" />
-                            <span className="text-lg font-bold">{subject.resources.notes}</span>
-                            <span className="text-xs text-muted-foreground">Notes</span>
-                        </div>
-                        <div className="flex flex-col items-center p-3 rounded-lg bg-muted">
-                            <Code className="h-5 w-5 text-muted-foreground mb-1" />
-                            <span className="text-lg font-bold">{subject.resources.assignments}</span>
-                            <span className="text-xs text-muted-foreground">Tasks</span>
-                        </div>
-                    </div>
-
-                    {/* Upcoming Exam Alert */}
-                    {daysUntilExam && daysUntilExam <= 30 && (
-                        <div className={`p-3 rounded-lg ${daysUntilExam <= 7 ? 'bg-red-50 border border-red-200' : 'bg-yellow-50 border border-yellow-200'}`}>
-                            <div className="flex items-center gap-2">
-                                <Clock className={`h-4 w-4 ${daysUntilExam <= 7 ? 'text-red-500' : 'text-yellow-500'}`} />
-                                <span className={`text-sm font-medium ${daysUntilExam <= 7 ? 'text-red-700' : 'text-yellow-700'}`}>
-                                    Exam in {daysUntilExam} days
-                                </span>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Action Button */}
-                    <Button className="w-full">
-                        Continue Learning
-                    </Button>
                 </CardContent>
             </Card>
         </motion.div>

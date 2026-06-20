@@ -34,8 +34,9 @@ async function getLearningPathDetails(id: string): Promise<LearningPathWithLesso
     return { ...(pathData as any), lessons: (lessonsData as any) || [] };
 }
 
-export default async function LearningPathDetailPage({ params }: { params: { id: string } }) {
-    const path = await getLearningPathDetails(params.id);
+export default async function LearningPathDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const path = await getLearningPathDetails(id);
 
     if (!path) {
         notFound();

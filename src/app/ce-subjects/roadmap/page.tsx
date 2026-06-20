@@ -11,8 +11,8 @@ import ReactFlow, {
     useNodesState,
     useEdgesState,
     MarkerType,
-    Node,
-    Edge
+    type Node,
+    type Edge
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 

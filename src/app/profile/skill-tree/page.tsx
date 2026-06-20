@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import ReactFlow, { Background, Controls, MiniMap, Node, Edge } from 'reactflow';
+import ReactFlow, { Background, Controls, MiniMap, type Node, type Edge } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { motion } from 'framer-motion';
 import { Lock, Unlock, Network } from 'lucide-react';
