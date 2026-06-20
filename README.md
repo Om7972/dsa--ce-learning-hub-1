@@ -1,250 +1,252 @@
 # 🚀 DSA & CE Learning Hub
 
-A comprehensive, modern learning platform for Data Structures & Algorithms and Computer Engineering subjects with premium UI/UX, gamification, and interactive features.
-
-## ✨ Features
-
-### 🎨 Premium UI/UX
-- **Animated Top Navigation** - Sleek navbar with user avatar, notifications, streak/points badges
-- **Responsive Design** - Works seamlessly on desktop, tablet, and mobile
-- **Dark Mode Support** - Beautiful dark theme with smooth transitions
-- **Framer Motion Animations** - Smooth, professional animations throughout
-- **Gradient Accents** - Modern gradient effects and glassmorphism
-
-### 📚 Learning Features
-
-#### Learning Paths
-- Structured learning journeys from beginner to advanced
-- Progress tracking for each path
-- Difficulty levels (Beginner, Intermediate, Advanced)
-- Topic tags and module counts
-- Enrollment system with continue learning
-
-#### DSA Practice Arena
-- Curated problem sets with difficulty levels
-- Problem filtering by category and difficulty
-- Acceptance rate tracking
-- Company tags (Google, Amazon, Microsoft, etc.)
-- Solve/Attempted/Unsolved status tracking
-- Search functionality
-
-#### CE Subjects
-- Comprehensive coverage of core CS subjects
-- Semester-wise organization
-- Progress tracking per subject
-- Resource counts (Videos, Notes, Assignments)
-- Upcoming exam alerts
-- Topic completion tracking
-
-### 📊 Progress Tracking
-- **Weekly Activity Chart** - Visual representation of daily problem-solving
-- **Skill Mastery** - Progress across different DSA topics
-- **Achievements System** - Unlock badges and earn rewards
-- **Streak Tracking** - Current and longest streaks
-- **Total Hours** - Time spent learning
-
-### 🎮 Gamification
-- **Streak System** - Daily streak tracking with flame icon
-- **Points/XP** - Earn points for completing tasks
-- **Achievements** - Unlock badges (First Steps, Week Warrior, Problem Solver, etc.)
-- **Leaderboards** - Compete with peers (coming soon)
-
-### 🛠️ User Features
-
-#### Profile & Settings
-- **Profile Management** - Update personal information and avatar
-- **Notification Preferences** - Customize email, push, and achievement notifications
-- **Security** - Password management and account security
-- **Appearance** - Theme selection (Light/Dark/System)
-- **Language & Region** - Localization settings
-
-#### Support System
-- **FAQ Section** - Searchable frequently asked questions
-- **Contact Methods** - Email, Live Chat, Phone support
-- **Help Resources** - Documentation, Video Tutorials, Community Forum
-- **Contact Form** - Direct message to support team
-
-### 🔔 Notifications
-- Real-time notification system
-- Unread count badges
-- Notification categories (Assignments, Achievements, Reminders)
-- Notification preferences in settings
-
-## 🎯 Pages
-
-### Main Pages
-- **Landing Page** (`/`) - Hero section with features showcase
-- **Dashboard** (`/dashboard`) - Overview with stats and activity
-- **Learning Paths** (`/learning-paths`) - Structured learning journeys
-- **DSA Practice** (`/dsa-practice`) - Problem-solving arena
-- **CE Subjects** (`/ce-subjects`) - Computer Engineering subjects
-- **Progress** (`/progress`) - Detailed analytics and achievements
-- **Profile** (`/profile`) - User profile and stats
-- **Settings** (`/settings`) - Account and preferences management
-- **Support** (`/support`) - Help and contact
-
-### Auth Pages
-- **Login** (`/login`) - User authentication
-- **Signup** (`/signup`) - New user registration
-
-## 🛠️ Tech Stack
-
-### Frontend
-- **Next.js 15** - React framework with App Router
-- **TypeScript** - Type-safe development
-- **Tailwind CSS** - Utility-first styling
-- **Framer Motion** - Animation library
-- **Radix UI** - Headless UI components
-- **Lucide React** - Icon library
-
-### UI Components
-- Avatar, Badge, Button, Card, Dialog
-- Dropdown Menu, Input, Label, Progress
-- Switch, Tabs, Textarea, Tooltip
-- Custom animated components
-
-### Backend (Planned)
-- **Supabase** - Authentication and database
-- **Drizzle ORM** - Type-safe database queries
-- **PostgreSQL** - Database
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-
-### Installation
-
-```bash
-# Clone the repository
-git clone <repository-url>
-
-# Navigate to project directory
-cd dsa--ce-learning-hub-1
-
-# Install dependencies
-npm install
-
-# Run development server
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Build for Production
-
-```bash
-npm run build
-npm start
-```
-
-## 📁 Project Structure
-
-```
-src/
-├── app/                    # Next.js App Router pages
-│   ├── api/               # API routes
-│   ├── ce-subjects/       # CE Subjects page
-│   ├── dashboard/         # Dashboard page
-│   ├── dsa-practice/      # DSA Practice page
-│   ├── learning-paths/    # Learning Paths page
-│   ├── progress/          # Progress page
-│   ├── settings/          # Settings page
-│   ├── support/           # Support page
-│   └── page.tsx           # Landing page
-├── components/
-│   ├── layout/            # Layout components (TopNav, Sidebar, Footer)
-│   ├── ui/                # Reusable UI components
-│   └── dashboard/         # Dashboard-specific components
-└── lib/                   # Utilities and helpers
-```
-
-## 🎨 Design System
-
-### Colors
-- **Primary** - Blue gradient (for CTAs and accents)
-- **Secondary** - Purple gradient (for highlights)
-- **Success** - Green (for completed items)
-- **Warning** - Yellow/Orange (for alerts)
-- **Error** - Red (for errors and danger zones)
-
-### Typography
-- **Headings** - Bold, large sizes with gradients
-- **Body** - Readable, accessible font sizes
-- **Code** - Monospace for code snippets
-
-### Spacing
-- Consistent spacing scale (4px base)
-- Generous padding for cards and sections
-- Proper margins for readability
-
-## 🔐 Authentication
-
-Currently using mock authentication. Integration with Supabase Auth is planned:
-- Email/Password authentication
-- Social login (Google, GitHub)
-- JWT-based sessions
-- Protected routes with middleware
-
-## 📊 Data Models
-
-### User
-- Profile information
-- Learning progress
-- Achievements
-- Streak data
-
-### Problem
-- Title, description, difficulty
-- Category and tags
-- Test cases
-- Solution templates
-
-### Subject
-- Course information
-- Topics and modules
-- Resources (videos, notes)
-- Progress tracking
-
-## 🎯 Roadmap
-
-### Phase 1 (Current)
-- ✅ Premium UI/UX design
-- ✅ All main pages created
-- ✅ Navigation system
-- ✅ Progress tracking UI
-- ✅ Settings and support pages
-
-### Phase 2 (Next)
-- 🔄 Supabase integration
-- 🔄 Real authentication
-- 🔄 Database setup
-- 🔄 API implementation
-
-### Phase 3 (Future)
-- 📝 Code editor integration
-- 📝 Real-time collaboration
-- 📝 AI-powered hints
-- 📝 Video lessons
-- 📝 Discussion forums
-- 📝 Leaderboards
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 🙏 Acknowledgments
-
-- Radix UI for accessible components
-- Framer Motion for animations
-- Lucide for beautiful icons
-- Tailwind CSS for styling utilities
+A comprehensive, modern learning platform for Data Structures & Algorithms (DSA) and Computer Engineering (CE) subjects with premium UI/UX, interactive visuals, gamification, and a personalized onboarding system.
 
 ---
 
-Built with ❤️ for Computer Engineering students
+## 🎨 Premium UI/UX & Design System
+
+### Visual Features
+*   **Animated Navigation Bar**: Sleek top navbar containing user avatar dropdowns, notification centers (with unread badges), and interactive gamification metrics (streaks & points).
+*   **Aesthetic Transitions**: Powered by Framer Motion for smooth layout shifts, modal transitions, hover effects, and progressive page loadings.
+*   **Advanced Layouts**: Integrated layouts supporting responsive grid systems, collapsable sidebars, and dedicated light/dark theme schemes.
+*   **Responsive Adaptation**: Designed mobile-first, ensuring high responsiveness across mobile, tablet, and widescreen monitors.
+
+### Design Tokens
+*   **Primary Accent**: Blue gradient (representing dynamic progression and calls-to-action)
+*   **Secondary Accent**: Purple gradient (highlighting statistics and gamification achievements)
+*   **Success Indicator**: Green color palette (signaling completed challenges, correct solutions, and finished modules)
+*   **Warning/Error Accents**: Yellow, orange, and red HSL values for alerts, locked features, or syntax compilation failures.
+
+---
+
+## 📚 Core Product Modules
+
+### 1. 🎯 Personalized Onboarding System
+A 5-step wizard built to map out custom profiles, gauge current abilities, compile user learning goals, and provide curated learning roadmaps.
+*   **Step 1: Profile Setup**: Collects full name, college, current academic year, and preferred programming language.
+*   **Step 2: Learning Goals**: Identifies target fields (e.g., Interviews, DSA preparation, GATE exam, Placement, or University courses).
+*   **Step 3: Skill Level**: Determines user baseline (Beginner, Intermediate, Advanced).
+*   **Step 4: Interests Matrix**: Enables selection from 10+ core DSA topics and 10+ CE subjects.
+*   **Step 5: Daily Commitment**: Selects target daily study hours (15m, 30m, 1hr, 2+hrs) to calibrate recommendation metrics.
+*   **Features**: Auto-saves step progress locally using browser session caches, dynamically renders recommendations using a scoring engine, and celebrates completion with custom canvas confetti animations.
+
+### 2. 📚 Learning Paths
+Provides linear, structured learning paths to master key engineering competencies:
+*   *Data Structures Fundamentals* (Beginner)
+*   *Algorithm Design & Analysis* (Intermediate)
+*   *Advanced Trees & Graphs* (Advanced)
+*   *Competitive Programming* (Advanced)
+*   *Capabilities*: Progress bars, hours-spent trackers, and modular lesson unlock structures.
+
+### 3. 💻 DSA Practice Arena
+A practice hub hosting diverse problem sets with key analytics:
+*   **Problem Lists**: Sorted by Difficulty (Easy, Medium, Hard) and Category (Array, String, Trees, Dynamic Programming).
+*   **Tracking**: Tracks problem states (Solved ✓, Attempted ⏱️, Unsolved ○) and displays global acceptance rates.
+*   **Company Tags**: Identifies problems commonly asked at tech companies (e.g. Google, Amazon, Microsoft).
+
+### 4. 🏛️ CE Subjects Hub
+Organized course guides for core computer engineering curricula:
+*   **Curriculum Coverage**: Includes Computer Architecture (COA), DBMS, Computer Networks, Operating Systems, Software Engineering, and Theory of Computation.
+*   **Resource Management**: Access video lectures, written lecture notes, and assignments. Includes countdown trackers for upcoming exams.
+
+### 5. 🎮 Gamification & Progress Center
+*   **Daily Streaks**: Encourages consistency with flame badges and consecutive day counters.
+*   **Points/XP System**: Awards points for completing challenges, lessons, and quizzes.
+*   **Achievements**: Unlockable badges (e.g., *First Steps*, *Week Warrior*, *Problem Solver*) with progress visualizers.
+
+---
+
+## 🗄️ Database Architecture
+
+The backend operates on a **Supabase PostgreSQL** instance comprising **17 tables** structured with proper indices, triggers, and Row Level Security (RLS) policies:
+
+| Table Name | Description |
+| :--- | :--- |
+| `users` | Profiles, roles, preferred languages, and onboarding settings |
+| `subjects` | Computer Engineering and Programming subjects |
+| `learning_paths` | Learning tracks containing multiple modules |
+| `lessons` | Sub-modules of subjects and paths containing content |
+| `topics` | Broad category groups (e.g., Sorting, Arrays) |
+| `dsa_problems` | Coding questions, difficulty levels, and constraints |
+| `quizzes` | Assessments assigned to various subjects |
+| `quiz_questions` | Multiple-choice questions mapped to quizzes |
+| `user_progress` | Trackers for completed lessons and paths |
+| `study_schedules` | Calendar items and reminders created by users |
+| `submissions` | Code outputs and execution results for DSA problems |
+| `achievements` | Seeded badges and reward descriptors |
+| `user_achievements` | User-to-achievement mapping |
+| `certificates` | Generated credentials for completed subjects |
+| `discussion_threads` | Parent community discussion posts |
+| `discussion_replies` | Nested responses inside discussion threads |
+
+---
+
+## 🔐 Authentication System
+
+Powered by **Supabase Auth** with JWT session management:
+*   **Secure Cookies**: Saves token contexts to secure cookies ensuring SSR (Server-Side Rendering) compatibility.
+*   **Protected Routing**: Managed via `src/middleware.ts` which redirects users:
+    *   To `/onboarding` if they haven't finished the onboarding questionnaire.
+    *   To `/login` if they are not authenticated.
+    *   To `/dashboard` (away from login/signup pages) once they are successfully authenticated.
+
+---
+
+## 📡 API Endpoints Reference
+
+### Authentication API
+
+#### `POST /api/auth/signup`
+Creates a new user record in Supabase Auth.
+*   **Body**:
+    ```json
+    {
+      "email": "student@example.com",
+      "password": "password123",
+      "full_name": "Jane Doe"
+    }
+    ```
+*   **Response**: `200 OK` with validation success message.
+
+#### `POST /api/auth/login`
+Signs in a user and returns their JWT context.
+*   **Body**:
+    ```json
+    {
+      "email": "student@example.com",
+      "password": "password123"
+    }
+    ```
+*   **Response**: JWT session token and user profile model.
+
+#### `POST /api/auth/logout`
+Terminates the user session and clears authentication cookies.
+
+#### `GET /api/auth/me`
+Retrieves the logged-in user profile from the active cookie.
+
+---
+
+### Subjects & Content API
+
+#### `GET /api/subjects`
+Fetches a list of all engineering subjects ordered by order index (Public).
+
+#### `POST /api/subjects`
+Creates a new subject entry (Admin Only).
+*   **Body**:
+    ```json
+    {
+      "name": "Distributed Systems",
+      "description": "Advanced systems topics",
+      "category": "CE",
+      "difficulty_level": "advanced"
+    }
+    ```
+
+---
+
+### User Progress & Study Planners
+
+#### `GET /api/user-progress`
+Fetches the current user's completed modules and paths (Auth Required).
+
+#### `POST /api/user-progress`
+Updates or creates progress entries for a lesson (Auth Required).
+*   **Body**:
+    ```json
+    {
+      "lesson_id": "uuid-here",
+      "status": "completed"
+    }
+    ```
+
+#### `GET /api/study-schedules`
+Fetches study schedules and calendar events for the user (Auth Required).
+
+#### `POST /api/study-schedules`
+Schedules a new learning slot (Auth Required).
+*   **Body**:
+    ```json
+    {
+      "topic_id": "uuid-here",
+      "title": "Study Binary Search Trees",
+      "description": "Complete 3 Medium Tree problems",
+      "date": "2026-06-25",
+      "start_time": "14:00:00",
+      "end_time": "16:00:00",
+      "status": "scheduled"
+    }
+    ```
+
+---
+
+## 🚀 Getting Started & Setup Guide
+
+### 1. Prerequisites
+Ensure you have the following installed:
+*   [Node.js](https://nodejs.org/) (Version 18 or higher)
+*   [Supabase CLI](https://supabase.com/docs/guides/cli) or an active [Supabase Cloud Project](https://supabase.com/)
+
+### 2. Project Installation
+Clone the repository and install all dependencies:
+```bash
+# Install package dependencies
+npm install
+```
+
+### 3. Environment Configuration
+Create a `.env` file in the root of the project with your database and API credentials:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+```
+
+### 4. Run Database Migrations
+1. Open your **Supabase Dashboard** SQL editor.
+2. Create a new query and run the contents of:
+   *   `supabase/migrations/001_initial_schema.sql` (Creates core structures and tables)
+   *   `supabase/migrations/002_add_onboarding_fields.sql` (Appends onboarding tracking parameters)
+3. Ensure RLS policies are enabled under the *Authentication -> Policies* tab of the database.
+
+### 5. Running the Application
+Launch the dev server:
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) to view the project.
+
+### 6. Testing
+You can run the test suite to verify component renderings, validations, and helper utilities:
+```bash
+npm run test
+```
+
+---
+
+## 📁 Directory Structure
+
+```
+dsa--ce-learning-hub-1/
+├── src/
+│   ├── app/                  # Next.js App Router routes & API endpoints
+│   ├── components/           # UI elements and page modules (Onboarding, Layout, etc.)
+│   ├── contexts/             # Global contexts (e.g. AuthContext)
+│   ├── db/                   # Database helpers & schemas
+│   ├── hooks/                # Custom React hooks (e.g. useOnboarding)
+│   ├── lib/                  # Utilities, constants, and mock helpers
+│   ├── types/                # TypeScript type definitions
+│   └── middleware.ts         # Session verification and URL routing middleware
+├── supabase/
+│   └── migrations/           # Database migration files
+├── public/                   # Static assets (images, icons)
+├── tsconfig.json             # TypeScript configuration
+├── package.json              # App dependencies & scripts
+└── README.md                 # Project documentation
+```
+
+---
+
+*Built with ❤️ for Computer Engineering & Computer Science students.*

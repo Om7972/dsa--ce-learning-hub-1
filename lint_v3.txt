@@ -1,9 +1,0 @@
-
-> app@0.1.0 lint
-> next lint
-
-
-./src/visual-edits/VisualEditsMessenger.tsx
-1:1  Error: Definition for rule '@typescript-eslint/no-explicit-any' was not found.  @typescript-eslint/no-explicit-any
-
-info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
