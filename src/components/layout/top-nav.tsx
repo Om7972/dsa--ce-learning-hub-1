@@ -30,7 +30,10 @@ import {
     HelpCircle,
     Briefcase,
     BookOpen,
-    Users
+    Users,
+    Clock,
+    Brain,
+    Compass
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -121,63 +124,66 @@ export function TopNav() {
                                     <NavigationMenuTrigger suppressHydrationWarning className="bg-transparent hover:bg-accent/50">Platform</NavigationMenuTrigger>
                                     <NavigationMenuContent>
                                         <div className="grid w-[520px] gap-4 p-5 md:w-[620px] md:grid-cols-2 lg:w-[720px]">
-                                            <ListItem href="/dashboard" title="Dashboard" icon={<LayoutDashboard className="h-5 w-5" />}>
+                                            <ListItem href="/dashboard" title="Dashboard" icon={<LayoutDashboard className="h-5 w-5 text-primary" />}>
                                                 Your personal learning center and progress tracking.
                                             </ListItem>
-                                            <ListItem href="/curriculum" title="Curriculum" icon={<BookOpen className="h-5 w-5" />}>
+                                            <ListItem href="/curriculum" title="Curriculum" icon={<BookOpen className="h-5 w-5 text-indigo-500" />}>
                                                 Comprehensive structured learning paths.
                                             </ListItem>
-                                            <ListItem href="/visualizer" title="DSA Visualizer" icon={<Eye className="h-5 w-5" />}>
-                                                Interactive algorithm visualizations.
+                                            <ListItem href="/visualizer" title="DSA Visualizer" icon={<Eye className="h-5 w-5 text-emerald-500" />}>
+                                                Interactive algorithm, BST, and graph visualizations.
                                             </ListItem>
-                                            <ListItem href="/problems" title="Problem Bank" icon={<List className="h-5 w-5" />}>
+                                            <ListItem href="/problems" title="Problem Bank" icon={<List className="h-5 w-5 text-sky-500" />}>
                                                 Practice problems sorted by difficulty and topic.
                                             </ListItem>
-                                            <ListItem href="/dsa-practice" title="DSA Practice" icon={<Code2 className="h-5 w-5 text-primary" />}>
+                                            <ListItem href="/dsa-practice" title="DSA Practice" icon={<Code2 className="h-5 w-5 text-pink-500" />}>
                                                 Hands-on practice problems and timed challenges.
                                             </ListItem>
-                                            <ListItem href="/ce-subjects" title="CE Subjects" icon={<BookOpen className="h-5 w-5 text-sky-500" />}>
+                                            <ListItem href="/ce-subjects" title="CE Subjects" icon={<BookOpen className="h-5 w-5 text-violet-500" />}>
                                                 Subject-wise curriculum and exam-focused materials.
                                             </ListItem>
-                                            <ListItem href="/roadmaps" title="Career Roadmaps" icon={<Map className="h-5 w-5" />}>
-                                                Step-by-step guides for different tech roles.
-                                            </ListItem>
-                                            <ListItem href="/ai-tutor" title="AI Tutor" icon={<Sparkles className="h-5 w-5" />}>
-                                                Get instant help from our AI assistant.
-                                            </ListItem>
                                         </div>
                                     </NavigationMenuContent>
                                 </NavigationMenuItem>
 
                                 <NavigationMenuItem>
-                                    <NavigationMenuTrigger suppressHydrationWarning className="bg-transparent hover:bg-accent/50">Resources</NavigationMenuTrigger>
+                                    <NavigationMenuTrigger suppressHydrationWarning className="bg-transparent hover:bg-accent/50">Career & Prep</NavigationMenuTrigger>
                                     <NavigationMenuContent>
                                         <div className="grid w-[520px] gap-4 p-5 md:w-[620px] md:grid-cols-2 lg:w-[720px]">
-                                            <ListItem href="/blog" title="Engineering Blog" icon={<Newspaper className="h-4 w-4" />}>
-                                                Tech articles, tutorials, and industry insights.
+                                            <ListItem href="/placement" title="Placement Hub" icon={<Briefcase className="h-5 w-5 text-amber-500" />}>
+                                                Company sheets, roadmaps, behavioral mock interviews, ATS scanner.
                                             </ListItem>
-                                            <ListItem href="/community" title="Community Forum" icon={<Users className="h-4 w-4" />}>
-                                                Connect with other students and mentors.
+                                            <ListItem href="/career" title="Career Tools" icon={<FileText className="h-5 w-5 text-teal-500" />}>
+                                                Drag-and-drop resume builder, AI cover letter writer, project portfolio.
                                             </ListItem>
-                                            <ListItem href="/cheatsheets" title="Cheat Sheets" icon={<FileText className="h-4 w-4" />}>
-                                                Quick references for exams and interviews.
+                                            <ListItem href="/exam" title="Exam Mode" icon={<Target className="h-5 w-5 text-red-500" />}>
+                                                Timed mock semester tests, PYQ resources catalog.
                                             </ListItem>
-                                            <ListItem href="/interview-prep" title="Interview Prep" icon={<Briefcase className="h-4 w-4" />}>
-                                                Mock interviews and company-specific guides.
-                                            </ListItem>
-                                            <ListItem href="/faq" title="FAQs" icon={<HelpCircle className="h-4 w-4" />}>
-                                                Common questions about the platform.
+                                            <ListItem href="/roadmaps" title="Career Roadmaps" icon={<Compass className="h-5 w-5 text-blue-500" />}>
+                                                Custom study planning checklists with streak tracking.
                                             </ListItem>
                                         </div>
                                     </NavigationMenuContent>
                                 </NavigationMenuItem>
 
                                 <NavigationMenuItem>
-                                    <NavigationMenuLink asChild>
-                                        <Link href="/learning-paths" className={navigationMenuTriggerStyle() + " bg-transparent hover:bg-accent/50"}>
-                                            Learning Paths
-                                        </Link>
-                                    </NavigationMenuLink>
+                                    <NavigationMenuTrigger suppressHydrationWarning className="bg-transparent hover:bg-accent/50">Arena & Focus</NavigationMenuTrigger>
+                                    <NavigationMenuContent>
+                                        <div className="grid w-[520px] gap-4 p-5 md:w-[620px] md:grid-cols-2 lg:w-[720px]">
+                                            <ListItem href="/contest" title="Contest Arena" icon={<Trophy className="h-5 w-5 text-amber-500" />}>
+                                                Daily timed challenges, compilers, real-time leaderboard rankings.
+                                            </ListItem>
+                                            <ListItem href="/study-groups" title="Study Groups" icon={<Users className="h-5 w-5 text-purple-500" />}>
+                                                Collaborative chat, shared markdown notes, group quiz lobbies.
+                                            </ListItem>
+                                            <ListItem href="/productivity" title="Productivity Hub" icon={<Clock className="h-5 w-5 text-rose-500" />}>
+                                                Stateful Pomodoro timer, habit trackers, goals organizer.
+                                            </ListItem>
+                                            <ListItem href="/revision" title="Revision Hub" icon={<Brain className="h-5 w-5 text-emerald-500" />}>
+                                                Spaced repetition flashcards, note logs, bookmarked topic trackers.
+                                            </ListItem>
+                                        </div>
+                                    </NavigationMenuContent>
                                 </NavigationMenuItem>
                             </NavigationMenuList>
                         </NavigationMenu>
@@ -367,24 +373,29 @@ export function TopNav() {
                             <MobileNavLink href="/learning-paths" onClick={() => setIsMobileMenuOpen(false)}>
                                 Learning Paths
                             </MobileNavLink>
-                            <MobileNavLink href="/dsa-practice" onClick={() => setIsMobileMenuOpen(false)}>
-                                DSA Practice
+                            <MobileNavLink href="/visualizer" onClick={() => setIsMobileMenuOpen(false)}>
+                                DSA Visualizer
                             </MobileNavLink>
-                            <MobileNavLink href="/ce-subjects" onClick={() => setIsMobileMenuOpen(false)}>
-                                CE Subjects
+                            <MobileNavLink href="/placement" onClick={() => setIsMobileMenuOpen(false)}>
+                                Placement Hub
                             </MobileNavLink>
-                            <MobileNavLink href="/ai-tutor" onClick={() => setIsMobileMenuOpen(false)}>
-                                <Sparkles className="h-4 w-4 mr-2 inline" />
-                                AI Tutor
+                            <MobileNavLink href="/career" onClick={() => setIsMobileMenuOpen(false)}>
+                                Career Tools
                             </MobileNavLink>
-                            <MobileNavLink href="/progress" onClick={() => setIsMobileMenuOpen(false)}>
-                                Progress
+                            <MobileNavLink href="/exam" onClick={() => setIsMobileMenuOpen(false)}>
+                                Exam Mode
                             </MobileNavLink>
-                            <MobileNavLink href="/bookmarks" onClick={() => setIsMobileMenuOpen(false)}>
-                                Bookmarks
+                            <MobileNavLink href="/contest" onClick={() => setIsMobileMenuOpen(false)}>
+                                Contest Arena
                             </MobileNavLink>
-                            <MobileNavLink href="/support" onClick={() => setIsMobileMenuOpen(false)}>
-                                Support
+                            <MobileNavLink href="/study-groups" onClick={() => setIsMobileMenuOpen(false)}>
+                                Study Groups
+                            </MobileNavLink>
+                            <MobileNavLink href="/productivity" onClick={() => setIsMobileMenuOpen(false)}>
+                                Productivity Hub
+                            </MobileNavLink>
+                            <MobileNavLink href="/revision" onClick={() => setIsMobileMenuOpen(false)}>
+                                Revision Hub
                             </MobileNavLink>
 
                             <div className="border-t my-2 pt-2">
